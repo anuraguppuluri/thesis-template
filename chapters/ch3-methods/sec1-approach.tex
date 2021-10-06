@@ -1,0 +1,34 @@
+\chapter{Methods}\label{ch2:methods}
+
+\section{Approach}\label{sec1:approach} 
+
+Whereas the 2018 model claioms to gebreraLIZER TO OTHER DATASEYT WIERHOUT RETREAINGU, no suvk ckaimsd gave been madfe by the 2020 model
+
+When we ran the inference part of the 2020 Single-View MPI model \footnote{Deep Learning terms such as model, network, and CNN have been used interchangeably throughout this thesis.} on a video chat frame and found that the generated disparity map (a by-product of MPI inference in this network architecture) was visually inaccurate, it became the starting off point for our thesis. Comparatively, the inferred disparity map would be much more visually accurate when a real estate video frame was processed. The latter outcome is to be expected because the 2020 Single-View MPI model was exclusively trained on the RealEstate10K video dataset.   
+
+\subsection{Problem Statement 1}\label{subsec1:problem_statement_1}
+
+\textbf{How to increase the 2020 Single-View MPI model’s depth prediction accuracy for video chat frames or any other video-chat-relevant image with close up shots of people.}
+
+As inference was one of the only parts of the network made publicly available by the authors on GitHub due to the proprietary nature of some other aspects of their code, the first step in addressing problem statement 1 was to recreate the 2020 Single-View MPI training procedure.
+
+Recreating and retraining the network involved the following:
+\begin{itemize}
+    \item Taking the readily available network information from the paper --- like details about the various types of fully-convolutional encoder-decoder layers involved, etc. --- and putting it in place with other aspects of the network that called for a more involved recreation process like the data loader part and the loss function.
+    \item Processing all the videos from the required datasets with an ORB-SLAM2 package called COLMAP to extract the 3D point clouds of the scenes in each video frame which makes up one-half of the input to the training pipeline, the other half being the actual video frames themselves.
+    \item Attempting to train the network on only the video-chat-relevant Mannequin Challenge video dataset \cite{li2019learning} which is $\sim$90\% smaller than the RealEstate10K dataset.
+    \item Fixing the programming errors encountered during training.
+    \item Retraining the recreated model on not just the Mannequin Challenge dataset but also the RealEstate10K dataset by clubbing both datasets together to be used as a singular source of input to the recreated 2020 MPI model.
+\end{itemize}
+
+The main reason for extending the Mannequin Challenge dataset with the originally used RealEstate10K dataset was so Hypothesis B of this thesis could be proved: ---
+
+\paragraph{Hypothesis A:}
+The recreated model trained only on the video-chat-relevant Mannequin Challenge Dataset performs as well as the 2020 MPI model does on real estate data, when it comes to accurately predicting MPIs and disparity maps of video-chat-relevant frames involving close up shots of one or more persons.
+
+\paragraph{Hypothesis B:}
+If hypothesis A is disproved\footnote{Please refer to the Experiments and Results Chapter.}, the recreated MPI model should perform as well as the 2020 MPI model if the Mannequin Challenge training data were extended by the RealEstate10K dataset.
+
+\input{chapters/ch3-methods/sec2-data}
+\input{chapters/ch3-methods/sec3-implementation}
+

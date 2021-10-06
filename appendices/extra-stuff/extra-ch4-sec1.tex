@@ -1,0 +1,206 @@
+
+
+
+
+
+
+Using the 
+hoe they perform against Mannequin Dataset 
+
+Ask professor Ventura about metrics to generate to understand perfrmance 
+
+Steps to generate SSMI and PSNR
+\cite{wang_ssmi_psnr}
+https://www.tensorflow.org/api_docs/python/tf/image/psnr
+https://www.tensorflow.org/api_docs/python/tf/image/ssim
+
+Steps to generate SSMI and PSNR: ---
+1) Single view MPI Use model and run inference to generate intermittent views from known angles 
+2) Keep aside a frames from 
+
+Does stereo mpi and single view mpi have the same training procedure of suppressing some frames from a video clip as ground truth and predicting these frames and finally minimizing the loss between the rendered frame and the suppressed frame like PSNR and SSMI?
+
+three datapoints to be got: ---
+1) directly do inference from MPI colab and generate PSNR and SSMI for intermittent frames from Mannequin Dataset like actual training procedure?
+2) repeat 1) by getting trained weights with only Mannequin Data and using them on colab to infer  
+3) repeat 2) by getting trained weights with also RealEstate Data not just Mannequin Data and using them on colab to infer
+2) get intermediate disparity maps during trainig 
+
+steps on x axis and loss on y asix
+training, validaton and test data plots to go into experiments and results
+save loss function values to text file so as to be plotted
+
+About the Kalantari baseline in 2018 mpi model
+How were these Kalantri numbers geenrated
+
+Ho do you bring abou tthe baseline 
+
+What is the baseline approach of the authors 
+
+To compare these methods, we measure the accuracy of
+synthesized images using the LPIPS perceptual similarity
+metric [35] and PSNR and SSIM metrics, on a held-out set
+of 300 test sequences, choosing source and target frames
+to be 5 or 10 frames apart. At test time, we use the point
+set to compute the scale factor σ in the same way as we do
+during training—for a fair comparison, we also do this for
+the noscale model. Results are in Table 2 (LPIPSall, PSNRall
+and SSIMall columns).
+
+Prof Ventura How is this done?
+
+
+Todo:
+
+
+Run colmap on test set  [ 10 min ] 
+Start from test.py copy to test-ssmi.py - [ 30 min ]
+add colemap points path
+Add a while(true) and starting with i = 0 outside and i = i + 1 inside the loop 
+saving the metrics and log 
+Once u get 20 videos done for colemap -- copy to separate small folder and run script in 2) [ 10 min ] 
+
+8/29/2021
+[ 4 pm - 4:45 pm ] Experiments + Results -> discuss at 4:45 - 5 PM 
+[ 5 pm - 5:45 pm ] Discussion + Conclusion -> discuss at 5:45 - 6 PM 
+[ 6 pm - 6:45 pm ] Introduction -> discuss at 6:45 - 7 PM
+[ 7 pm - 7:45 pm ] Methods -> discuss at 7:45 - 8 PM 
+[ 8 pm - 8:45 pm] Dinner 
+Colab intermittent images, draw.io pipelines, paper images
+9 pm - 10 pm [ 1 hr ] inference to do non-randomized coding ( model 1 , model 2 ) 
+ [ 10 pm - 11 pm ] redo methods + results + conclusion -> intro 
+[ 1 hr ] Fix colemap issues for Manequinn only + video resolution issues 
+[ 1 hr ] Star re-running Training Manequinn only for 8000+ for training further ( how many iteration do we need to do it --- ) → ( may need to run for 2 full days ) 
+Gather colemap results and use one gpu to process on problem videos
+Colemap Data gathering for training for model 3) = { realty + mannequin } for 4 full days 
+Start training 
+
+
+
+
+Experiments Section
+Here are some of the quantitative and qualitative evaluations of the variants of the recreated 2020 Single-View MPI model trained on different combinations of the Mannequin Challenge and RealEstate10K datasets. We use the pretrained weights of the 2020 MPI model as the benchmark and compare the abilities of all models at hand to generate novel views (more extensive training underway). We adopt some of the quantitative metrics from the 2020 MPI paper \cite{single_view_mpi} --- PSNR, SSMI, and LPIPS --- to give numeric values to the similarities between MPI-rendered video frames and the corresponding ground truth target frames the rendering process attempts to replicate. 
+
+The following are the model variants used to compute the metrics stated above to help provide arguments for or against each of the hypotheses stated in section \ref{sec1:approach}: ---
+\begin{itemize}
+    \item The pretrained weights of the 2020 single-view MPI model trained exclusively on RealEstate10K data.
+    \item The recreated 2020 model retrained exclusively on the Mannequin Challenge dataset with transfer learning using the pretrained weights of the original 2020 MPI model. In this transfer learning process, none of the layers of the pretrained weights were frozen and so could learn and evolve based on the Mannequin Challenge data they were newly exposed to.
+    \item The recreated 2020 model retrained not just on the Mannequin Challenge dataset but also on the RealEstate10K dataset with similar transfer learning as in the previous variant. This variant was encouraged to be tried out by one of the authors of the 2020 MPI paper in our correspondences with him. \cite{single_view_mpi}
+\end{itemize}
+
+
+
+(45 mins) 
+How is the input image picked and test set picked ?
+What happens to the image ? 
+What is the output rendered ? 
+Between what images is the output metrics calculated ? 
+
+We sifted through the test set of the Mannequin Challenge dataset to hand pick a set of 333 videos that contained ORB-SLAM2 recognized sequences\footnote{the timestamp, camera intrinsics and extrinsics of all frames of each of which are listed in the corresponding .txt files in the dataset} which had video-chat-relevant features like the head and torso of people being focused on rather than having wide shots of entire bodies, the number of people in the frame being mostly limited to one or two as opposed to multiple people being featured, and the head pose of people being roughly or even very loosely aligned with the camera (there was hardly anybody that looked directly at the camera). We put them in the test-yes/ bin. We also curated test-maybe/ (311 videos) and test-no/ (25 videos) bins that consisted of the rest of the Mannequin Challenge test set with sequences either having no relevance to video chat (like there being hardly anyone in the frames) for test-no/ to those falling heavily in the gray areas between test-yes/ and test-no/ for test-maybe/. We even occasionally interspersed the test-yes/ and test-maybe/ bins with videos containing sequences that portrayed people facing diametrically opposite the camera just to really challenge the model variant being tested.
+
+Of the various aspects of the code that we recreated from scratch\footnote{Please find our code repository at \url{https://github.com/au001/view-synthesis.git}} like generator\_test.py, generator\_train.py, data\_loader.py, train.py, and test.py, the scripts relevant to the experiments in this section are test.py and generator\_test.py. For testing, the generator first aggregates all videos names from the directory input to it and for each of these, it picks reference\_image and target\_image to be either 5 or 10 frames apart. reference\_image is the frame that test.py uses to infer the MPI of the scene from and target\_image is supposedly a view of the same scene from a different angle. The possibility that, when the camera moves from one scene to another in the same video, reference\_image may depict a scene different from the one captured by target\_image is expected to be extremely rare as both datasets have been curated by a similar ORB-SLAM2 process like COLMAP. In such hypothetical cases, target\_image will be erroneously rendered by mpi.render() in rendered\_image. But since we take the mean of the computed metrics over hundreds of test.py processed reference\_image, target\_image pairs, we believe the final accuracies of a variant's mean metrics will not be off the tracks much and that they shall still be used to determine a variant’s performance satisfactorily. Each of the three metrics are calculated between target\_image and rendered\_image. We first test and compute metrics of frames 5 part and then we repeat the same test process for frames 10 apart just to show (as in the case of the 2020 MPI paper) that the longer the baseline between reference/source and target views, the less the accuracy will be of the rendered image. Moreover, we also calculate the metrics for all processed reference\_image, target\_image pairs, to catch the hypothetical anomalies of complete scene changes mentioned above.  
+
+PSNR or Peak Signal-to-Noise Ratio is 
+
+[ 7 PM ]
+Metrics : Explain math behind the metrics and how does the library you use compute it with references ? 
+
+
+→ Results : 
+
+Here are the results for the baseline model and the variant retrained on only the video-chat-relevant Mannequin Challenge dataset (current for 20 test videos - all 338 test videos coming soon):
+Source-Target Distance PSNR SSIM LPIPS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+> Make a table with all the numbers and spaces for the three different models like in original MPI paper 
+> generate one set of images : reference, ( with pose in fig description ); target (pose in fig description) and rendered 
+
+The authors of 2020 MPI \ref used the following pointers to qualitatively compare the discrepancies in the results generated by each variant model:
+(i) handling of occluded content, 
+(ii) unpleasant artifacts at the edges of foreground objects 
+
+In addition to visually checking for these, we find that visually cheking the disparity map is also useful in verifying the quality of the mpi produced   
+
+The authors of 2020 MPI \ref used pointers like qualitatively compare the discrepancies in the results generated by each variant model:
+(i) handling of occluded content, 
+(ii) unpleasant artifacts at the edges of foreground objects
+
+In addition to visually checking for these, we find that visually cheking the disparity map is also useful in verifying the quality of the mpi produced   
+
+Table for PSNR, SSIM, and LPIPS
+More visually appealing graphs coming up
+
+Using the 
+hoe they perform against Mannequin Dataset 
+
+Ask professor Ventura about metrics to generate to understand perfrmance 
+
+Steps to generate SSIM and PSNR
+\cite{wang_ssmi_psnr}
+https://www.tensorflow.org/api_docs/python/tf/image/psnr
+https://www.tensorflow.org/api_docs/python/tf/image/ssim
+
+Steps to generate SSMI and PSNR: ---
+1) Single view MPI Use model and run inference to generate intermittent views from known angles 
+2) Keep aside a frames from 
+
+Does stereo mpi and single view mpi have the same training procedure of suppressing some frames from a video clip as ground truth and predicting these frames and finally minimizing the loss between the rendered frame and the suppressed frame like PSNR and SSMI?
+
+
+
+steps on x axis and loss on y asix
+training, validaton and test data plots to go into experiments and results
+save loss function values to text file so as to be plotted
+
+About the Kalantari baseline in 2018 mpi model
+How were these Kalantri numbers geenrated
+
+Ho do you bring abou tthe baseline 
+
+What is the baseline approach of the authors 
+
+To compare these methods, we measure the accuracy of
+synthesized images using the LPIPS perceptual similarity
+metric [35] and PSNR and SSIM metrics, on a held-out set
+of 300 test sequences, choosing source and target frames
+to be 5 or 10 frames apart. At test time, we use the point
+set to compute the scale factor σ in the same way as we do
+during training—for a fair comparison, we also do this for
+the noscale model. Results are in Table 2 (LPIPSall, PSNRall
+and SSIMall columns).
+
+Prof Ventura How is this done?
+
+
+1) directly do inference from MPI colab and generate PSNR and SSMI for intermittent frames from Mannequin Dataset like actual training procedure?
+2) repeat 1) by getting trained weights with only Mannequin Data and using them on colab to infer  
+3) repeat 2) by getting trained weights with also RealEstate Data not just Mannequin Data and using them on colab to infer
+2) get intermediate disparity maps during trainig 
+
+Qulaitative analysis can be showing disparity maps 

@@ -338,14 +338,16 @@
     % \textsc{\@title}
 
         %\vfill\null
-        \addvspace{1.4in}
+        %\addvspace{1.4in}
+        \addvspace{1.1in}
 
     A Thesis \par
     presented to \par
     the Faculty of California Polytechnic State University, \par
     \@campus
 
-        \addvspace{1.4in}
+        %\addvspace{1.4in}
+        \addvspace{1.0in}
         %\vfill\null
 
 

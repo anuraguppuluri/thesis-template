@@ -1,0 +1,37 @@
+\section{Implementation}\label{sec3:implementation} 
+
+Training details. We implement our system in TensorFlow [Abadi
+et al. 2016]. We train the network using the ADAM solver [Kingma
+and Ba 2014] for 600K iterations with learning rate 0.0002, β1 =
+0.9, β2 = 0.999, and batch size 1. During training, the images and
+MPI have a spatial resolution of 1024 × 576, but the model can be
+applied to arbitrary resolution at test time in a fully-convolutional
+manner. Training takes about one week on a Tesla P100 GPU.
+
+They didn't even use multiGPU
+
+issue happened is the resolution had to be fixed and colmap had to be run again
+
+difference between train.py throws NaN gradient errors np.loadtext thingie and np.generatefromtext thingie such that one possibly inclused empty and the other discards copletely?
+
+training just takes +1 frame to be the target
+only testing takes +5 or +10 frames according to the 2020 paper
+
+
+Expanding upon pipeline description ---
+
+video ------------> input 1 --------------> training
+|
+|
+|-----------------> COLMAP -----------> 3D points per video frame -------------> input 2 -----------> same training
+
+how does data loader work?
+
+Original authors choice with colmap 
+my reason for pursuing colmap
+what does colmap do> --------> bundle adjustment, triangulation, 
+
+COLMAP highlevel
+
+Triangulation
+Bundle Adjustment

@@ -1,0 +1,158 @@
+Although there has also been simultaneous progress related to free viewpoint TV but the hardware is not up to the mark yet to warrant a mention in this section.
+
+Multiplane images originally devised for stereo matching problems 
+Richard Szeliski and Polina Golland. Stereo matching with
+transparency and matting. Int. J. Comput. Vision, 32(1):45–61,
+Aug. 1999.
+
+2018 mpi paper
+stereo mpi
+
+edge aware smoothness loss
+stereo mpi 
+
+
+
+
+
+
+starlink
+
+Stereo matching has long been an important issue in computer vision research.
+Most stereo algorithms fall far short of the quality and resolution required by these new applications, where even minor flaws in the depth map become easily obvious when composited with synthetic graphical elements. Occasionally, algorithms based on variable window sizes (Kanade and Okutomi, 1994) or iterative evidence aggregation (Scharstein and Szeliski, 1996) might alleviate such problems. Another frequent issue is that disparities are calculated only to the next pixel, which is frequently insufficient for activities such as view interpolation. Numerous strategies for computing subpixel estimates have been devised, including the use of a tighter set of disparity assumptions and the determination of the analytic minimum of the local error surface (Tian and Huhns, 1986; Matthies et al, 1989)
+
+
+2018 mpi paper
+stereo mpi
+the 2018 paper sort of reinvented MPIs
+
+converting 3D stereoscopic video to multi-view video suitable for
+glasses-free automultiscopic displays
+
+Over the last few years, smartphone cameras have steadily supplanted point-and-shoot cameras and have become comparable with digital SLR cameras in some situations.
+This shift has been facilitated by the rising image quality of smartphone cameras, which has been achieved by improved hardware and computational photography capabilities such as high dynamic range imaging [Hasinoff et al 2016] and synthetic defocus [Apple 2016; Google 2017b].
+While stereo cameras have existed almost as long as photography itself, a number of dual-camera smartphones, such as the iPhone 7, have just been available.
+These cameras often have a very narrow baseline, typically less than a centimeter.
+
+View synthesis—that is, taking one or more views of a scene as input and creating new views—is a basic computer graphics problem that is at the heart of many image-based rendering systems.
+Numerous approaches concentrate on the interpolation setup, either interpolating rays from dense images (“light field rendering”) [Gortler et al 1996; Levoy and Hanrahan 1996] or recreating scene geometry from sparse views [Debevec et al 1996; Hedman et al 2017; Zitnick et al 2004].
+While these algorithms produce high-quality novel views, they do so by compositing the relevant input pixels/rays, and so perform best when there are several (> 2) input views.
+Recent work on view synthesis has examined a variety of deep network designs, scene representations, and application scenarios.
+Flynn et al. [2016] proposed the DeepStereo view interpolation approach, which predicts a volumetric representation from a sequence of input photos and trains the model using street scene photographs.
+Kalantari et al. [2016] employ light field images acquired with a Lytro camera [Lytro 2018] as training data for forecasting a color image for an interpolated target perspective.
+Both of these strategies predict a representation in the target view's coordinate system.
+The authors' method predicts the scene representation only once and then reuses it in real time to generate a variety of output views.
+These past techniques, in contrast to the authors', emphasize interpolation rather than extrapolation.
+Other recent work has examined the difficulty of synthesizing a stereo pair [Xie et al 2016], huge camera motion [Zhou et al 2016], or even a light field [Srinivasan et al 2017] from a single image, a type of extrapolation to the extreme.
+The authors' work focuses on the increasingly widespread occurrence of stereo pairings with a narrow baseline.
+This two-view situation may allow for greater generalization and extrapolation than the single-view scenario.
+Stereo Magnification: Developing an understanding of view synthesis through the use of multiplane pictures 65:3 is capable of operating on relatively homogeneous datasets such as macro shots of flowers and extrapolating up to the small baseline of a Lytro camera, whereas the method is capable of operating on a diverse set of indoor and outdoor scenes and extrapolating views large enough to allow for slight head motions in a VR headset.
+The authors are particularly interested in representations that may be predicted once and then utilized at runtime to render many views.
+To do this, depictions are frequently volumetric or incorporate some type of layering.
+LDIs are a subset of depth maps that represent a scene utilizing multiple layers of depth maps and related color values [Shade et al 1998].
+These layers enable the user to "look around" the foreground geometry to the occluded items hidden behind it.
+Represent scenes using depth maps for each input image and solve for alpha matted layers around discontinuities in the depth map to achieve high-quality interpolation [2004].
+The authors' multiplane image (MPI) representation combines numerous desirable aspects of past techniques, including multilayer support and layer "softness" for expressing mixed pixels near boundaries or reflective/transparent objects.
+3.1 Image representation in several planes The authors' global scene representation is a set of fronto-parallel planes with a fixed depth range relative to a reference coordinate frame, each plane d encoding an RGB color picture Cd and an alpha/transparency map d.
+
+Color of the background
+
+Synthesis of distinct views via MPIs
+
+Objective
+
+The authors attempted to employ structure-from-motion techniques created in the field of computer vision, such as Colmap [Schönberger and Frahm 2016].
+These approaches are optimized for photo collections, and the authors discovered that when applied to video sequences, they are slow and prone to failure.
+Visual SLAM techniques take a sequence of frames as input and develop and maintain a sparse or semi-dense 3D reconstruction of the scene while estimating the viewpoint of the current frame in a manner consistent with the reconstruction.
+SLAM algorithms are not designed to process videos with multiple shots separated by cuts and dissolves, and they are typically only concerned with the accuracy of the current frame's pose—in particular, as the scene is refined over time, earlier frames may become out of sync with the current state of the world.
+To address these concerns, the following method is taken: 1. 3. When ORB-SLAM2 is unable to track K = 6 consecutive frames, or when the authors achieve a sequence length of L, the clip is considered to be complete.
+4. Reprocess all frames in the clip, maintaining the final scene model constant, in order to estimate a consistent pose for each camera.
+5. Re-initialize ORB-SLAM2 so that it is prepared to begin tracking a new clip in the following frames.
+Re-initialize ORB-SLAM2 to ensure that it is prepared to track a new clip in subsequent frames.
+In this method, the authors employ ORBSLAM2 not only to track frames, but also to partition a video into clips by detecting shot boundaries via tracking failure.
+Because SLAM approaches, including ORB-SLAM2, require knowledge of camera intrinsics such as field of view, the authors choose a 90-degree field of view.
+This assumption performed remarkably well for recognizing high-quality clips.
+The above processing results in a collection of clips or sequences for each video, as well as a preliminary set of camera parameters.
+4.3 Pose refinement through bundle adjustment The authors process each sequence at a higher resolution, extracting features from individual frames, matching them across frames, and performing a global bundle adjustment using the Ceres non-linear least squares optimizer [Agarwal et al 2016].
+Each sequence produces an adjusted set of camera postures, an estimated field of view, and a sparse point cloud describing the scene.
+One drawback with this method is that there is no way to identify the global size of the scene, which means that the reconstructed camera stances are scaled arbitrarily every clip.
+We "scale-normalize" each sequence using the predicted 3D point cloud, scaling it to a given distance from the cameras for the nearest scene geometry.
+The authors compute the 5th percentile depth for each frame from all point depths captured by the camera in that frame.
+Calculating this depth over all cameras in a series produces a collection of "near plane" depths for each camera.
+A: Video frames from the input source b: Sparse point cloud c: Camera positions d: Chosen subsequence e: Source frames f: Destination g: Destination.
+This pipeline generates 7,000 sequences with a total of 750K frames from an initial batch of about 1500 videos.
+The authors pick tuples from the dataset by first selecting a random subsequence [d] of length 10 from each sequence, with stride randomly determined between 1 and 10.
+The authors randomly select two alternative frames and their poses as the inputs I1, I2, c1, and c2 [e], and a third frame as the target It, ct, from this subsequence.
+To avoid overfitting to generating images at a particular distance during training, the authors selected to learn to anticipate views from a variety of positions relative to the source imagery.
+Method Network Impairment
+The authors begin by visualizing the MPI representation inferred by the model and then compare it to other recent methods for view synthesis.
+Despite the absence of a direct color or alpha groundtruth for each MPI plane during training, the inferred MPI is capable of capturing the scene appearance in a layer-wise way that respects the scene geometry, allowing for realistic rendering of fresh perspectives from the representation.
+5.2 Correspondence to Kalantari et al. The authors compare the model to Kalantari et al. [2016], a state-of-the-art method for vision synthesis based on machine learning.
+
+
+The authors' method predicts a scene-level MPI representation capable of real-time rendering of any fresh viewpoint with minimum processing. The authors use the data to train and test two variants of their method: 1) the original network architecture (4 convolution layers) with pixel reconstruction loss; and 2) the network architecture with perceptual loss. The authors discover that 1) the network architecture is significantly more effective than the simple four-layer network used in the original Kalantari paper; 2) the VGG perceptual loss contributes to the model's performance improvement over the pixel reconstruction loss; and 3) the model outperforms the better of the two Kalantari variants (VGG with the network architecture), indicating the high-quality of novel views rendered. The authors note that when rendering continuous view sequences of the same image, the results are more spatially coherent than those produced by Kalantari and exhibit less frame-to-frame aberrations. The authors argue that this is because, in contrast to the Kalantari model, they infer a single scene-level MPI representation that is shared for rendering all target views, thus imposing a smoothness prior on close views when rendering. The authors' model generalizes well on the HCI dataset and compares favorably to Zhang et al. along depth boundaries, where the method introduces fewer distortion artifacts. The authors trained appearance flow on the dataset [Zhou et al 2016], but discovered considerable aberrations in displayed views, such as straight lines getting warped. This method appears to be more suited to object-centric synthesis than to scene rendering, and it does not fully leverage correlations between views, as the trained network functions on each input image independently. The network makes no predictions about color images or blending weights. Each MPI plane's color image is derived from the reference source image.
+The network forecasts a single color image that will be shared across all MPI planes. The network generates a backdrop picture and weights for blending.
+In contrast to the previous form, the network predicts an additional foreground image for blending with the background. At each MPI plane, the network produces the color image directly. Because not all MPI planes must have the same color data, the "BG+blending weights" approach can better depict these areas.
+The “FG+BG+blending weights” form is slightly more powerful due to the unrestricted foreground image, while the “All images” variant, with a separate color image for each plane, is the only variant capable of properly representing a scene with depth complexity. The authors' model performance improves as the inferred MPI representation has more depth planes.
+Applications
+
+The authors demonstrate two applications of the trained model: 1) taking a narrow-baseline stereo pair from a cell phone camera and extrapolating it to an average human interpupillary distance (IPD)-spaced stereo pair; and 2) taking an image pair from a large-baseline stereo camera and extrapolating a "1D lightfield" of views between and beyond the source images.
+The authors used an iPhone X, a contemporary dual-lens camera phone with a baseline of 1.4cm, to take a collection of image pairs using an app that preserves both captured views.
+The authors explain how to take a big baseline stereo pair and create a continuous "1D lightfield"—that is, a collection of views along a line passing through the source views.
+The authors used stereo pairs captured by a Fujifilm FinePix Real 3D W1 stereo point-and-shoot camera with a baseline of 7.7cm and extrapolated to a continuous collection of images with a baseline of 26.7cm for this application.
+This input baseline, magnification factor, and scene content create a difficult situation for the model, and artifacts such as backdrop stretching are seen.
+The findings indicate that realistic interpolations and extrapolations of the original images are possible.
+DISCUSSION
+
+2020 mpi paper
+edge aware smoothness loss
+
+Introduction
+
+Objectives
+
+Methods
+
+Conclusion
+
+Introduction
+Objectives
+
+Results
+
+Conclusion
+
+Google has spent the last several years developing software experiences that make you feel as though you're in the same room as another human person, even if they're many time zones away. On the one hand, there's dull Google Meet, the company's Zoom competitor. He desired photo-realistic, volumetric video meetings that looked, sounded, and felt just like the other person was sitting across the table from you—without the use of a headset.
+
+There was the Starline booth, which was partially wood-paneled and partly covered in gray cloth, and had an integrated bench on one side and a 65-inch display on the other.
+You could be forgiven for believing that Starline was created during the pandemic, while desk employees were umm-ing, muting, and unmuting their way through an endless stream of Meets and Zooms.
+Bavor asserts that there was no "aha" moment that precipitated the creation of Project Starline.
+“What has always fascinated me about virtual and augmented reality is the idea that these technologies can transport you to other locations and make you feel as if you are physically present in another location,” Bavor explains.
+“However, it did not appear as though there was a method to bring the most important things in the world to you, specifically the people you care about.”
+For several years, Starline will remain a notion, unlikely to enliven your Google Meet meetings.
+Andrew Nartker, Project Starline's lead product manager, has been bringing an apple to meetings.
+It's a method of demonstrating how objects in Project Starline interact, and, perhaps more disturbingly, a method of tracking eyeballs.
+“I can show you this Whole Foods apple and see precisely what you're looking at,” Nartker adds as I take a seat in the booth.
+Nartker is conferencing in from a second identical Project Starline booth to the one being used by the author.
+The author is currently seeing a 65-inch light field display.
+(When the author requests specifics about the equipment, Google is evasive.)
+Google has not disclosed the cost of constructing a Project Starline booth; my best guess is "quite a bit." Project Starline, on the other hand, is a condensed version of much bigger volumetric capture studios.
+
+Project Starline is unlikely to find a home in your impromptu home office anytime soon.
+
+While it's difficult to imagine this type of technology operating seamlessly over a shoddy home Wi-Fi connection—Google did confirm that the author's booth was hardwired to the building's network—one of the Project Starline engineers insisted that the technology would work using Google's standard-speed office network, without the need for fiber.
+In Project Starline, the author encountered three distinct Googlers, and part of the surreality dissipated as the author shifted in his or her seat.
+When Nartker began projecting a web page onto the light field display as a demonstration of how two individuals may communicate in Starline, the authors simply peered over each other's right shoulders at a non-interactive page.
+According to Google, perhaps a hundred employees have utilized Starline, which has been hidden in secret offices in Mountain View, Seattle, and New York.
+Bavor has been utilizing it for the majority of his recent meetings in Seattle and New York, spending approximately 50 hours in the booth.
+He says that his encounters in Starline have left his brain with a stronger brushstroke, that he has better recollection of details, and that he leaves meetings with the impression of having met the individual.
+“I'm aware that the individual across from me is not checking his phone during the discussion, which is nice,” Bavor says.
+In this context, Google's Project Starline appears particularly overengineered, a synthesis of accessible technology (Google Meet), geek technology, and a meticulously constructed, immobile small studio, all for the sake of... more video meetings.
+If you create an article implying that Google Glass is no longer available, the firm's public relations team will swiftly inform you that the company continues to sell a product called Glass Enterprise Edition 2.
+One has to wonder if Bavor is less interested in head-up displays these days, given that it appears as though every other consumer technology company is developing face computers.
+Bavor maintains that VR is “extremely powerful in its potential to transport you to another place,” and that there is a connection between AR and VR and Project Starline.
+
+Bavor said Google will conduct trials of the technology later this year with a select group of early adopters, including enterprise cloud organizations, telemedicine apps, and media companies, though he declined to name them.
+The Project Starline booths will be largely utilized by Googlers entering workplaces, who will marvel at the realism, hold up their apples, and briefly overlook the gap between realism and reality.
+Lauren Goode is a senior writer at WIRED, where she covers goods, applications, services, as well as consumer technology news and trends.
+

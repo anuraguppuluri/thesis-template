@@ -1,0 +1,48 @@
+\section{Background}\label{sec1:background}
+
+\subsection{Triangulation}\label{subsec2:triangulation}
+
+ \subsection{MPI Training Network}\label{subsec2:mpi-training}
+ 
+The MPI generation convolutional neural network 
+
+In the 2018 original MPI paper, a stereo pair of images is used to predict the MPI in the following manner:
+
+\begin{itemize}
+    \item The viewpoint of one of the stereo pair (I1, I2) I1 is used as the reference viewpoint for the MPI to be predicted
+    \item Hence the MPI would be fronto-parallel to the reference coordinate plane of I1, with all its planes stacked parallel to one another facing the camera of I1.
+    \item The input to the network is I1, its camera parameters c1
+\end{itemize}
+
+\chapter{Related Work}\label{ch2:related-work}
+related work augmenting video chat 
+
+augmenting view synthesis
+
+
+augmenting head pose estimation
+
+get closer to using view synthesis in video chat 
+
+https://ieeexplore.ieee.org/document/9105988
+This paper has a similar theme as the current thesis but differs mainly, in that, it has it renders 3D video using an intermediate light field representation as opposed to the current Multiplane Representation
+
+https://www.sciencedirect.com/science/article/pii/S2090447919301297
+
+
+
+
+Stereo Magnification (2018) paper introduces the MPI representation and also explains how the data was processed. Some parts of the code are refactored and reused in the 2020 MPI paper like how the 2018 paper loads data in: in particular the data loader (loader.py, datasets.py) does subsequence selection and some slight random cropping. There are several more interesting MPI-related papers (Pushing the Boundaries, DeepView, Local Lightfield Fusion) which explore different directions, but none of them are tackling the single-view approach.
+
+From the code the 2020 MPI authors have released (https://github.com/google-research/google-research/tree/master/single_view_mpi) we can see:
+  • their network definition (convolutional layers, kernel sizes, etc) (nets.mpi_from_image)
+  • how to render views from new camera positions (mpi.render), including everything related to the homography, etc
+
+What we didn't have was (a) the implementation of the losses, and (b) data including point clouds and a way to load it in.
+One of the key points of Single-View View Synthesis was to use sparse point cloud data to make the view synthesis loss scale-invariant. To obtain such data we would have to process the mannequin dataset to obtain point cloud and/or depth, for example with COLMAP, and then we could write a data loader or extend the one from Stereo Magnification.
+
+The original Mannequin Dataset (https://google.github.io/mannequinchallenge/www/index.html) is quite a bit smaller than RealEstate10K, and so there is a risk of overfitting. Hence, we are trying to find if it is better to use a combination of both RealEstate and MannequinChallenge than just MannequinChallenge alone). Hence this was one next step after we were able to figure out how to train the 2020 MPI paper model.
+
+\subsection{Multiplane Images}\label{subsec1:mpi}
+
+

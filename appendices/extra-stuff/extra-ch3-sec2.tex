@@ -1,0 +1,434 @@
+\chapter{Implementation}\label{ch:implementation}
+
+\section{Recreating and repurposing ML model from Single-view view synthesis from MPIs}\label{sec:contributions}
+
+
+
+
+
+
+These are the steps taken to complete the 2-way/1-way rendering pipeline: -
+
+And these are contributions of this thesis: -
+Supplementing the process of generating accurate MPI representations for close up targets like heads and bodies by 
+\begin{itemize}
+    \item re-training the MPI network with datasets containing stereo images of close up objects  
+    \item recreating loss functions from the textual descriptions in the 2020 MPI paper
+    \item writing a data loader for MannequinChallenge dataset and RealEstate10k dataset
+    \item writing scripts to produce 3D point clouds with COLMAP
+    \item adapting the training and testing scripts from the 2020 MPI paper to the aforementioned datasets and loss functions
+    \item fixing Nan gradient errors produced by cumprod used in several places in MPI code by replacing it with safe\_cumprod as suggested by on of the authors of the 2020 paper
+    \item fixing ValueErrors from our Data Loader
+\end{itemize}
+This 
+
+
+
+From youtube-dl downloads to COLMAP to MPI training:
+
+Step 1: Run get_videos.py on <train/> <test/> or <val/> folders
+python3 ../scripts/get_videos_aria2c.py train/ |& tee get-vid-log-train-202106241546.txt
+Step 2: Run get_errors.py on get-vid-log-train-202106241546.txt
+python3 ../scripts/get_errors.py get-vid-log-train-202106241546.txt train-errors-202106281624.txt
+Step 3: Find the names of all the youtube online videos in <train-errors-202106281624.txt> that can be found in this specific pattern
+"youtube\] (.*?)\: Download"
+python3 ../scripts/get_name_within_pattern.py train-errors-202106281624.txt train-error-names-202106281635.txt
+Step 3 can only be executed if there are no .part mp4 downloads remaining in <train/> <test/> or <val/> folders
+ 
+Step 4: Make sure there are no more part downloads
+Transfer all part downloads including their respective txt files to a separate folder
+find -name '*.part' -or -name '*.aria2' | xargs file > ../train-part-dls.txt
+python3 ../scripts/get_name_within_pattern.py train-part-dls.txt train-part-dl-names.txt
+python3 ../scripts/transfer_videos.py train-part-dl-names.txt train/ train-attempt2/
+Try downloading these videos again in the separate folder
+python3 ../scripts/get_videos_aria2c.py train-attempt2/ |& tee get-vid-log-train2-202106282055.txt
+It looks like the re-downloaded videos are all still either partial or glitchy -> this proves that it is sufficient to run get_videos.py just once
+Step 5: Find the names of all the youtube offline/downloaded videos in <train-error-names-202106290046.txt>
+python3 ../scripts/get_err_video_names.py train-error-names-202106290046.txt train/ train-err-vid-names-202106290116.txt
+Extraordinarily this step produces tons of duplicates in <train-err-vid-names-202106290116.txt>, so this is how we prune the duplicates
+ sort -u train-err-vid-names-202106290116.txt > train-err-vid-names-uniq-202106290116.txt
+
+
+Step 6: Transfer out all files related to video names in <train-err-vid-names-202106290116.txt>
+python3 ../scripts/transfer_videos.py train-err-vid-names-uniq-202106290116.txt train/ train-attempt2/
+Step 7: Some good videos are also transferred out inevitably, so let's check the integrity of these videos first
+https://stackoverflow.com/questions/34077302/quickly-check-the-integrity-of-video-files-inside-a-directory-with-ffmpeg
+Check step 
+Step 8: If it seems all mp4 files are replete with integrity, let’s move them out, but the question is how do you also move out the related txt files
+https://superuser.com/questions/497434/linux-how-to-find-all-files-with-the-same-name-different-filetype-and-move-them
+find . -name '*.mp4' -exec /bin/sh -c 'A=`basename {} .mp4`.txt ; test -f $A && mv {} $A ../train-attempt3/' \;
+
+
+Step 9: maybe do an inverse find to check if there are any other file types
+find ! -name '*.mp4' -and ! -name '*.txt' -and ! -name '*.mp4.part' -and ! -name '*.part.aria2'
+Or maybe check all filetypes with file cmd
+https://www.geeksforgeeks.org/file-command-in-linux-with-examples/
+Step 10: check the integrity of mp4s because some of them are complete like 70 MB mp4s but playback in VLC is black maybe because aria2 only partially downloaded them
+find *.mp4 -exec sh -c "ffmpeg -v error -i {} -map 0:1 -f null - 2>{}.log" \;
+One log file for each broken mp4
+find -name '*.log' -exec rm {} \;
+Check if log files are useful
+
+
+auppulur@elcapitan:/data3/RealEstate10K-data/RealEstate10K/train1-integrity-check-sample.log
+
+
+Upon random checking we can find that all log files are blank so there are no ffmeg errors to repost of the lack of integrity of any mp4 
+Clean up log files
+ 
+
+Step 11: Some mp4s just don’t have a 720p version period — so we put them aside for future work training in /data3/RealEstate10K-data/RealEstate10K/train-non-720p
+Step 12: COLMAP 3d points generation for each frame of each video requires getting the final Dockerfile-mark7 ready
+https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html
+http://dlib.net/compile.html
+https://github.com/TadasBaltrusaitis/OpenFace/blob/master/docker/Dockerfile
+https://github.com/TadasBaltrusaitis/OpenFace/wiki/Unix-Installation
+https://github.com/TadasBaltrusaitis/OpenFace/blob/master/install.sh
+https://hub.docker.com/layers/geki/colmap/latest/images/sha256-51b967b1f5dc38c1d6d3409453de86ca6386aa4bedfeeda32b621ea703a1092a?context=explore
+https://colmap.github.io/install.html
+https://github.com/colmap/colmap/blob/dev/docker/Dockerfile
+https://demuc.de/colmap/#about
+http://ceres-solver.org/installation.html
+
+
+
+
+  Step 12: fix cuda issue and make Dockerfile access GPUs
+-- Found CUDA: /usr/local/cuda (found suitable version "10.1", minimum required is "7.5") 
+-- Found CUDA, but CMake was unable to find the cuBLAS libraries that should be part of every basic CUDA install. Your CUDA install is somehow broken or incomplete. Since cuBLAS is required for dlib to use CUDA we won't use CUDA.
+-- DID NOT FIND CUDA
+-- Disabling CUDA support for dlib.  DLIB WILL NOT USE CUDA
+tf-docker /home/auppulur > uname -r
+3.10.0-1127.18.2.el7.x86_64
+Anyways let's drop this now after 2 days and get back to the prize
+
+
+
+
+  
+Step 13: We may try to make our own Dockerfile better by looking at the original base tensorflow docker hub github one or even nvidia/cuda ones 
+https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/dockerfiles/dockerfiles/gpu.Dockerfile
+https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/11.4.1/ubuntu18.04/devel/Dockerfile  
+Finally mpi:mark9 works as I’m inclined to see it work just because of 
+FROM nvidia/cuda:10.2-devel-ubuntu18.04
+Now let’s increase version numbers starting with a compatibility check:
+https://www.tensorflow.org/install/source
+  tensorflow-2.4.0	 Python 3.6-3.8	GCC 7.3.1	Bazel 3.1.0	  CuDNN 8.0 	11.0
+I have no name!@38dc6ee5b995:~/mpi$ uname -m && cat /etc/*release                                                               
+x86_64
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=18.04
+DISTRIB_CODENAME=bionic
+DISTRIB_DESCRIPTION="Ubuntu 18.04.5 LTS"
+NAME="Ubuntu"
+VERSION="18.04.5 LTS (Bionic Beaver)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 18.04.5 LTS"
+VERSION_ID="18.04"
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+VERSION_CODENAME=bionic
+UBUNTU_CODENAME=bionic
+
+
+  
+
+Step 14: Potentially the end game for Dockerfile
+https://www.quantstart.com/articles/installing-tensorflow-22-on-ubuntu-1804-with-an-nvidia-gpu/
+But mainly this: /data/auppulur/helper-projects/openpose-epic/Dockerfile-cylin 
+Actually this for cudnn and tensorrt: https://www.tensorflow.org/install/gpu 
+Step 4/21 : RUN uname -r
+ ---> Running in c25427441d20
+3.10.0-1127.18.2.el7.x86_64
+Gotta fix this someday: 
+debconf: delaying package configuration, since apt-utils is not installed
+No need NOTE if you install apt-utils, you will get other warnings (because now the installer can run interactive config and will attempt that
+https://stackoverflow.com/questions/51023312/docker-having-issues-installing-apt-utils
+Take AWAY: Even the positions of apt-get packages make all the difference
+  
+
+Step 15: OpenFace does not take anything other than opencv-4.1.0 and dlib-19.??
+Step 16: list all compiler versions including gcc
+I have no name!@2a72b8e508ee:/home/auppulur$ dpkg --list | grep compiler
+ii  cuda-compiler-10-2                     10.2.89-1                           amd64        CUDA compiler
+ii  g++                                    4:7.4.0-1ubuntu2.3                  amd64        GNU C++ compiler
+ii  g++-7                                  7.5.0-3ubuntu1~18.04                amd64        GNU C++ compiler
+ii  g++-8                                  8.4.0-1ubuntu1~18.04                amd64        GNU C++ compiler
+ii  gcc                                    4:7.4.0-1ubuntu2.3                  amd64        GNU C compiler
+ii  gcc-7                                  7.5.0-3ubuntu1~18.04                amd64        GNU C compiler
+ii  gcc-8                                  8.4.0-1ubuntu1~18.04                amd64        GNU C compiler
+ii  libllvm10:amd64                        1:10.0.0-4ubuntu1~18.04.2           amd64        Modular compiler and toolchain technologies, runtime library
+ii  libxkbcommon0:amd64                    0.8.2-1~ubuntu18.04.1               amd64        library interface to the XKB compiler - shared library
+  
+
+Step 17: Set required python version to be top priority
+https://medium.com/analytics-vidhya/how-to-install-and-switch-between-different-python-versions-in-ubuntu-16-04-dc1726796b9b
+But mainly this:
+https://stackoverflow.com/questions/54633657/how-to-install-pip-for-python-3-7-on-ubuntu-18
+Step 18: Finally in mpi:mark12 I attained 
+Step 9/26 : RUN which python3 && which python &&     python3 --version && python --version
+ ---> Running in ddaae1fe45d7
+/usr/bin/python3
+/usr/bin/python
+Python 3.7.11
+[91mPython 2.7.17
+Step 19: diff file1 file2
+
+
+Step 20: mpi-mark13-build-log-202108160139.txt
+CMake Error: The following variables are used in this project, but they are set to NOTFOUND.
+Please set them or make sure they are set and tested correctly in the CMake files:
+CUDA_curand_LIBRARY (ADVANCED)
+    linked by target "dlib" in directory /dlib/dlib
+CUDA_cusolver_LIBRARY (ADVANCED)
+    linked by target "dlib" in directory /dlib/dlib
+Perhaps it’s time to reinstall seemingly broken CUDA with https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=18.04&target_type=deb_local and https://www.tensorflow.org/install/gpu
+
+
+Step 21: two nvidia drivers now 450 and 470
+ls -ltar /usr/lib/x86_64-linux-gnu/libnvidia-ptx*
+-rwxr-xr-x. 1 root root  9947144 Aug  5  2020 /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.450.51.06
+-rw-r--r--. 1 root root 11144376 Jul 13 16:12 /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.470.57.02
+lrwxrwxrwx. 1 root root       37 Jul 13 21:37 /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.1 -> libnvidia-ptxjitcompiler.so.470.57.02lrwxrwxrwx. 1 root root       29 Jul 13 21:37 /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so -> libnvidia-ptxjitcompiler.so.1
+cat /proc/driver/nvidia/version
+
+
+Step 22: Proof that I need to manually reinstall CUDA even in a supposedly CUDA enabled image
+mpi:mark18 where I just installed cudnn and tensorrt alone but still no packages could locate cublas and other CUDA stuff
+-- Found CUDA: /usr/local/cuda (found suitable version "10.1", minimum required is "7.5") 
+-- Found CUDA, but CMake was unable to find the cuBLAS libraries that should be part of every basic CUDA install. Your CUDA install is somehow broken or incomplete. Since cuBLAS is required for dlib to use CUDA we won't use CUDA.
+-- DID NOT FIND CUDA
+-- Disabling CUDA support for dlib.  DLIB WILL NOT USE CUDA
+-- C++11 activated.
+Maybe need to purge previous CUDA first
+https://gist.github.com/Mahedi-61/2a2f1579d4271717d421065168ce6a73#file-cuda_installation_on_ubuntu_18-04-L60
+Step 23: tensorrt jackpot
+https://developer.download.nvidia.cn/compute/machine-learning/repos/ubuntu1604/x86_64/
+
+
+
+Step 24: None of the packages are installed… so not removed
+Package 'nvidia-driver-390' is not installed, so not removed
+Package 'nvidia-driver-418' is not installed, so not removed
+Package 'nvidia-driver-430' is not installed, so not removed
+Package 'nvidia-driver-435' is not installed, so not removed
+Step 25: RUN nvidia-smi just can’t be run within the Dockerfile
+Step 26:
+System reboot recommended here but docker seems to obviate the need in this scenario
+https://stackoverflow.com/questions/39712359/how-do-you-install-something-that-needs-restart-in-a-dockerfile
+
+
+
+Step 27: https://stackoverflow.com/questions/51282529/install-dlib-error-not-found-cublas-v2
+Install cublas-dev (sudo apt install cuda-cublas-dev-9-0) solved it for me.
+Update path for cuda or cublas or cudnn https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions
+Step 28: no use changing the path variable to include CUDA as well
+RUN ls -l /usr/local/cuda/lib64/libcublas*
+RUN ls -l /usr/local/cuda/bin/*
+ENV PATH="/usr/local/cuda/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+Step 29: cuda-drivers apt-get is responsible for nvidia version mismatch nvml and not even helping with dlib getting to use CUDA
+
+
+Step 30: might have to drop tf:gpu-2.4.0 which keeps installing cuda-drivers-470 for apt-get cuda-11-0 and can’t find cuda-11-0-167 even in online cuda download site
+Step 31: mention these deprecation warnings in presentation
+/usr/local/cuda/include/cuda_runtime.h:1188:55: warning: ‘cudaError_t cudaBindTextureToArray(const texture<T, dim, readMode>&, cudaArray_const_t, const cudaChannelFormatDesc&) [with T = unsigned char; int dim = 2; cudaTextureReadMode readMode = (cudaTextureReadMode)1; cudaError_t = cudaError; cudaArray_const_t = const cudaArray*]’ is deprecated [-Wdeprecated-declarations]
+   return err == cudaSuccess ? cudaBindTextureToArray(tex, array, desc) : err;
+                                 ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+/usr/local/cuda/include/cuda_runtime.h:1141:53: note: declared here
+ static __CUDA_DEPRECATED __inline__ __host__ cudaError_t cudaBindTextureToArray(
+                                                     ^~~~~~~~~~~~~~~~~~~~~~
+What settled it in the end for me to go for tf:gpu-2.4.0 instead of tf:gpu-2.2.0 was there were more cuda deprecation warnings especially colmap ones in the end and el capitan my server wouldn’t support more than cuda 11.0 
+Only three drawbacks are no nvidia-smi nvml version mismatch and CUDA warnings of:
+W: Target Packages (Packages) is configured multiple times in /etc/apt/sources.list:50 and /etc/apt/sources.list.d/cuda.list:1
+And dlib and colmap’s
+-- Automatic GPU detection failed. Building for common architectures.
+-- Autodetected CUDA architecture(s): 3.5;5.0;5.2;6.0;6.1;7.0;7.5;8.0;8.0+PTX
+And the best thing we can do about it is to delete the duplicate lines in these file or safely ignore the warnings
+A manual install of CUDA 11.0 using https://www.tensorflow.org/install/gpu would automatically install 11.4 as the instructions for deb(network) are identical to https://developer.nvidia.com/cuda-11.0-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork 
+Final successful log file for mpi:mark22 tf:gpu-2.4.0
+mpi-mark22-build-log-202108171041.txt
+  
+
+Step 32: For those who really want to know why the version mismatch happened and how to prevent it from happening again. This is because of the versions of nvidia-* are different in these locations:
+dpkg -l | grep nvidia (look at nvidia-utils-xxx package version), and
+cat /proc/driver/nvidia/version (look at the version of Kernel Module, 460.56 - for example)
+The restart should work, but you may want to forbid the automatic update of this package by modifying /etc/apt/sources.list.d/ files OR (I just found an easier way to hold the package) by executing this command apt-mark hold nvidia-utils-version_number.
+Cheers.
+P/S: Some contents were inspired by this (the original instruction was in Chinese, so i referenced the translated version instead)
+https://stackoverflow.com/questions/43022843/nvidia-nvml-driver-library-version-mismatch
+https://github.com/NVIDIA/nvidia-docker/wiki/Frequently-Asked-Questions#how-do-i-install-the-nvidia-driver
+
+
+
+Step 33: COLMAP finally
+git clone https://github.com/au001/view-synthesis.git
+Cloning into 'view-synthesis'...
+Username for 'https://github.com': au001
+Password for 'https://au001@github.com': 
+remote: Support for password authentication was removed on August 13, 2021. Please use a personal access token instead.
+remote: Please see https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/ for more information.
+https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token
+python3 ../view-synthesis/colmap/make_all_sparse_reconstructions.py train/
+python3 make_all_sparse_reconstructions.py ../../../RealEstate10K/train2/
+
+
+python3 ../view-synthesis/colmap/make_all_sparse_reconstructions.py train/
+you can try doing ctl+z
+and then find its process id using pid
+and then do kill <pid>
+and then fg
+ctl-z does not kill it, just backgrounds i
+sometimes you can also just hold down ctl-c for a long time?
+git status
+pull = fetch + merge.
+You need to commit what you have done before merging.
+So pull after commit.
+check nvidia-smi every 0.5 seconds
+watch -n0.5 nvidia-smi
+exit watch by ctrl+c
+
+
+
+Colmap is taking approx. 20 videos to process 1.5 hrs 
+So a total of 67582 videos in train1 alone will take approx. 5068.5 hrs = 211 days
+2 * 33719 videos in 2 * 105.5 days
+4 * 16857 videos in 4 * 52.75 days
+8 * 8428 videos in 8 * 26.375 days
+16 * 4214 videos in 16 * 13 days
+32 * 2107 videos in 32 * 6.5 days
+Need to time commands https://linuxize.com/post/linux-time-command/
+diff train-test-points/ train-test-points-multi-gpu/
+Common subdirectories: train-test-points/points and train-test-points-multi-gpu/points
+Common subdirectories: train-test-points/reco and train-test-points-multi-gpu/reco
+Absolutely no difference between CPU and GPU COLMAP except for speed
+
+
+COLMAP without GPU with time cmd for 3 videos
+real    20m16.392s
+user    105m32.380s
+sys     13m58.531s
+  COLMAP with multi-GPU with time cmd for 3 videos
+real    10m16.757s
+user    44m50.834s
+sys     6m43.126s
+COLMAP without GPU with time cmd for 3 videos
+real    20m6.740s
+user    104m20.324s
+sys     13m39.825s
+
+
+ Split the dataset by moving x number of files from the tail of the dataset
+https://www.unix.com/shell-programming-and-scripting/142539-move-first-1000-files.html
+ls | head -1000 | xargs -I{} mv {} ../temp
+
+
+COLMAP is only using all the GPUs at once and not able to recognize intended GPUs
+make_sparse_reconstruction.sh: 11: make_sparse_reconstruction.sh: --SiftExtraction.gpu_index=0,1: not found
+make_sparse_reconstruction.sh: 21: make_sparse_reconstruction.sh: --SiftMatching.gpu_index=0,1: not found
+Solution is to use --gpus flag to specify particular gpus to use
+COLMAP errors
+FilterH:        an illegal memory access was encountered
+FilterV:        an illegal memory access was encountered
+FilterH:        an illegal memory access was encountered
+FilterV:        an illegal memory access was encountered
+FilterH:        an illegal memory access was encountered
+FilterV:        an illegal memory access was encountered
+FilterH:        an illegal memory access was encountered
+FilterV:        an illegal memory access was encountered
+PyramidCU::GenerateFeatureList: an illegal memory access was encountered
+Processed file [189/189]
+  Name:            000188.png
+  ERROR: Failed to extract features.
+Elapsed time: 0.195 [minutes]
+
+
+
+
+COLMAP error 1
+an illegal memory access was encountered
+This probably caused by insufficient GPU
+memory. Consider reducing the maximum number of features.
+https://colmap.github.io/faq.html#feature-matching-fails-due-to-illegal-memory-access
+COLMAP error 1 solution: ask prof Ventura which GPU to use
+Now trying to use both El Capitan and Colab
+nvidia-smi --query-gpu=gpu_name,gpu_bus_id,vbios_version --format=csv
+https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries 
+El Capitan 
+name, pci.bus_id, vbios_version
+Tesla V100-PCIE-32GB, 00000000:21:00.0, 88.00.48.00.02
+Colab Pro+
+name, pci.bus_id, vbios_version
+Tesla V100-SXM2-16GB, 00000000:00:04.0, 88.00.9F.00.01
+nvidia-smi --query-gpu=timestamp,name,pci.bus_id,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv -l 5
+
+
+
+
+
+All tf:gpu images have libnvinfer including 2.2.0-2.6.0
+Check libnvinfer and libcudnn version on the image layers page 
+https://hub.docker.com/layers/tensorflow/tensorflow/2.2.0-gpu/images/sha256-3f8f06cdfbc09c54568f191bbc54419b348ecc08dc5e031a53c22c6bba0a252e?context=explore
+Latest tags for docker hub images and docker local images are being deprecated so I can take it easy with them 
+docker pull tensorflow/tensorflow:devel-gpu
+Was pushed literally 5 hours ago now 12:41 PM 8/19/2021
+And docker pull tensorflow/tensorflow:2.6.0-gpu literally 8 days ago
+Compatibility with newer cuda driver in image is possible with older kernel drive but it is a bit involved process so for future work
+https://docs.nvidia.com/deploy/cuda-compatibility/index.html
+Proving to be difficult to find the x in 11.0.x on El Capitan installed cuda 
+Maybe we can just use the 2.6.0 with CUDA 11.2 right now because of the above link that states
+CUDA 11.0 was released with an earlier driver version, but by upgrading to 450.80.02 driver as indicated, minor version compatibility is possible across the CUDA 11.x family of toolkits.
+But got the same Dlib error that 
+-- Found CUDA: /usr/local/cuda (found suitable version "11.2", minimum required is "7.5") 
+-- Found CUDA, but CMake was unable to find the cuBLAS libraries that should be part of every basic CUDA install. Your CUDA install is s
+omehow broken or incomplete. Since cuBLAS is required for dlib to use CUDA we won't use CUDA.
+-- DID NOT FIND CUDA
+-- Disabling CUDA support for dlib.  DLIB WILL NOT USE CUDA
+And docker build fails with the usual COLMAP error
+/colmap/src/mvs/gpu_mat.h:41:10: fatal error: curand_kernel.h: No such file or directory
+ #include <curand_kernel.h>
+As seen in /data/auppulur/mpi/mpi-mark25-build-log-202108191309.txt
+
+
+
+Strangely in the tf:gpu-2.6.0 docker image I get a lesser nvcc version
+Step 13/14 : RUN /usr/local/cuda/bin/nvcc --version
+ ---> Running in e253c19591af
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2021 NVIDIA Corporation
+Built on Sun_Feb_14_21:12:58_PST_2021
+Cuda compilation tools, release 11.2, V11.2.152
+Build cuda_11.2.r11.2/compiler.29618528_0
+Than in El Capitan
+auppulur@elcapitan:/data/auppulur/mpi $ /usr/local/cuda/bin/nvcc --version
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2021 NVIDIA Corporation
+Built on Wed_Jul_14_19:41:19_PDT_2021
+Cuda compilation tools, release 11.4, V11.4.100
+Build cuda_11.4.r11.4/compiler.30188945_0
+
+
+
+The main reason I think Dlib or COLMAP can’t find cuda and enable GPUs is 
+!cat /usr/local/cuda/version.txt && !cat /usr/include/cudnn.h | grep CUDNN_MAJOR -A 2 
+Are available in Colab but not in the docker containers of tg:gpu-2.2.0-2.6.0
+And turns out CUDA version in Colab is actually 11.0.228 whereas I would have expected it to be some
+So perhaps I need to manually install CUDA from https://developer.nvidia.com/cuda-11.0-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
+So if I just do an apt-get install cuda without manually also installing CuDNN and tensorRT then Dlib can’t enable CUDA due to missing CuDNN 
+More importantly I’m not getting an NVML version mismatch when I don’t install CUDA manually
+Maybe I gotto install the 450 El Capitan kernel driver as well and it depends on 460 that will automatically be installed too — but actually tf:gpu-2.2 deb (local) / runfile (local) specifically installs 460 so there is no need to download any driver separately but just do the deb (local) / runfile (local) installation rather than the deb(network) installation — maybe it's time to try runfile (local) rather than deb (local) or not
+Deb (network) installation from 
+https://developer.nvidia.com/cuda-11.2.1-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork# https://www.tensorflow.org/install/source
+Results in multiple versions of CUDA 11.2 and 11.4 and nvcc 11.4 and 450 and 470 drivers but only version of CuDNN 8.1.0.77-1+cuda11.2 and one version of libnvinfer 7.2.2-1+cuda11.1 being present as shown in /data/auppulur/mpi/deb-network-install-cuda-11-2-1.log  
+  
+
+describe trainig and inference pipeline to brng in openface
+  
+explain OpenFace in implementation
+
+highlevel undersatnding of openface 
+
+get head pose 
