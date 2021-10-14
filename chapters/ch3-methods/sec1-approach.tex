@@ -2,6 +2,31 @@
 
 \section{Approach}\label{sec1:approach} 
 
+\section{Hypotheses}
+
+ hypotheses of this thesis are as follows:
+1) Te MPI 2020 paper, which produces good disparity maps for <the opposite of close-up shots> <long shots of objects/landscapes> \cite{}, is unable to do so for close-up shot of people/objects. When we re-recreated the 202 Hence, our first hypothesis is that re-retraining the re-created 2020 MPI model on  
+
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Stereo Magnification (2018) paper introduces the MPI representation and also explains how the data was processed. Some parts of the code are refactored and reused in the 2020 MPI paper like how the 2018 paper loads data in: in particular the data loader (loader.py, datasets.py) does subsequence selection and some slight random cropping. There are several more interesting MPI-related papers (Pushing the Boundaries, DeepView, Local Lightfield Fusion) which explore different directions, but none of them are tackling the single-view approach.
+
+richard tucker email very very important:
+
+In terms of relation to the previous MPI papers: Stereo Magnification (2018) introduces the representation and also explains how the data was processed. The code itself is separate but you could look at how it loads data in: in particular the data loader (loader.py, datasets.py) does subsequence selection and some slight random cropping.
+
+From the code we have released (https://github.com/google-research/google-research/tree/master/single_view_mpi) you can see:
+  • our the network definition (convolutional layers, kernel sizes, etc) (nets.mpi_from_image)
+  • how to render views from new camera positions (mpi.render), including all the homography stuff
+
+What you don't have is (a) the implementation of the losses, and (b) data including point clouds and a way to load it in.
+One of the key points of Single-View View Synthesis was to use sparse point cloud data to make the view synthesis loss scale-invariant. To obtain such data you would have to process the mannequin dataset to obtain point cloud and/or depth, for example with COLMAP (maybe you have already done that), and then you could write a data loader or extend the one from Stereo Magnification.
+
+Is your Mannequin Dataset this one: https://google.github.io/mannequinchallenge/www/index.html? If so, a note of caution: it's quite a bit smaller than RealEstate10K, and so there is a risk of overfitting. (I have tried training on something like it myself, and I found that it was better to use a combination of both RealEstate and MannequinChallenge than just MannequinChallenge alone). But anyway, that's something to worry about after you are able to train.
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 Whereas the 2018 model claioms to gebreraLIZER TO OTHER DATASEYT WIERHOUT RETREAINGU, no suvk ckaimsd gave been madfe by the 2020 model
 
 When we ran the inference part of the 2020 Single-View MPI model \footnote{Deep Learning terms such as model, network, and CNN have been used interchangeably throughout this thesis.} on a video chat frame and found that the generated disparity map (a by-product of MPI inference in this network architecture) was visually inaccurate, it became the starting off point for our thesis. Comparatively, the inferred disparity map would be much more visually accurate when a real estate video frame was processed. The latter outcome is to be expected because the 2020 Single-View MPI model was exclusively trained on the RealEstate10K video dataset.   

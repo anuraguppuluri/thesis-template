@@ -1,2 +1,40 @@
 \input{chapters/ch5-discussion-conclusion/sec2-conclusion}
 \input{chapters/ch5-discussion-conclusion/sec3-future-work}
+
+from deep stereo paper the causes for overfitting
+
+Deep networks have enjoyed huge success in recent
+years, particularly for image understanding tasks [20, 29].
+Despite these successes, relatively little work exists on applying
+deep learning to computer graphics problems and especially
+to generating new views from real imagery. One
+possible reason is the perceived inability of deep networks
+to generate pixels directly, but recent work on denoising
+[35], super-resolution [6], and rendering [21] suggest
+that this is a misconception. Another common objection is
+that deep networks have a huge number of parameters and
+hence are prone to overfitting in the absence of enormous
+quantities of data, but recent work [29] has demonstrated
+state-of-the-art deep networks whose parameters number in
+the low millions, greatly reducing the potential for overfitting.
+
+from deep stereo on the success of neural nets
+
+In this work we present a new approach to new view synthesis
+that uses deep networks to regress directly to output
+pixel colors given the posed input images. Our system
+is able to interpolate between views separated by a
+wide baseline and exhibits resilience to traditional failure
+modes, including graceful degradation in the presence of
+scene motion and specularities. We posit this is due to the
+end-to-end nature of the training, and the ability of deep
+networks to learn extremely complex non-linear functions
+of their inputs [25].
+Additionally, although we focus on its application
+to new view problems here, we believe that the
+deep architecture presented can be readily applied to other
+stereo and graphics problems given suitable training data.
+Because
+of the variety of the scenes seen in training our system is robust
+and generalizes to indoor and outdoor imagery, as well
+as to image collections used in prior work.

@@ -1,5 +1,47 @@
 \section{Implementation}\label{sec3:implementation} 
 
+
+please complete richards conversation to glean more details about implementation
+
+Richard Tucker emails about implementation details:
+
+prof ventura:
+I think that must be it – I am running it in eager mode.  We will work on switching over.  Thanks again, Richard.
+
+
+richard:
+
+Our training setup was rather different: we used the old tf Estimator system as we had a configuration to allow us to do distributed training on ten workers.
+
+ 
+
+But even on a single worker, our gradient calculation took less than a second. I wonder if maybe you are doing everything in eager mode so there is a lot of overhead? Using keras's model.fit or the old estimator system, or just wrapping things in tf.function, should allow the critical parts to run in graph mode ought to be faster.
+
+Another possibility is things are too big to fit on your GPU. We used a batch size of 4, if I remember correctly.
+
+
+prof ventura:
+
+Okay, thanks, Richard.  At least I had the right intuition in thinking that might be an issue!
+
+ 
+
+We are able to train the model now and the loss does go down which is great.  However, the gradient calculation
+
+ 
+
+grads = tape.gradient(loss, model.trainable_weights)
+
+ 
+
+takes about one minute!  Is that what you experienced as well?  I am using a batch size of 8 and this is on an Nvidia V100.
+
+
+richard:
+
+
+
+
 Training details. We implement our system in TensorFlow [Abadi
 et al. 2016]. We train the network using the ADAM solver [Kingma
 and Ba 2014] for 600K iterations with learning rate 0.0002, β1 =
