@@ -1,5 +1,20 @@
 \section{Data}\label{sec2:data} 
 
+for the 2018 paper
+During training, the images and
+MPI have a spatial resolution of 1024 × 576, but the model can be
+applied to arbitrary resolution at test time in a fully-convolutional
+manner.
+but maintaining resolution for 2020 paper is not required 
+
+4.3 Refining poses with bundle adjustment
+We next process each sequence at higher resolution, using a standard
+structure-from-motion pipeline to extract features from each
+frame, match these features across frames, and perform a global
+bundle adjustment using the Ceres non-linear least squares optimizer
+[Agarwal et al. 2016].
+
+
 The steps taken to get both Mannequin Challenge and RealEstate10K datasets ready for training are as follows:
 
 
