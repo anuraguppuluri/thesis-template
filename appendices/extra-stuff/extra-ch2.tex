@@ -1,4 +1,4 @@
-Although there has also been simultaneous progress in the field of free viewpoint TV, yet the technology/hardware is not up to the mark yet to warrant a mention in this section.
+Although there has also been simultaneous progress in the field of free viewpoint TV, yet the technology/hardware is not up to the mark yet to warrant a mention in this section. They are similar to 360-degree YouTube videos that probably capture entire light fields pertaining to the scene but can be viewed on much bigger screens.
 
 ``Display devices like VR headsets are functionally holographic --- as the user moves around they have to have new perspectives for each position that they are in; and in order to serve that you have to have something fundamentally holographic. Moreover we're also getting this on 2D screens: multiperspective panels. So it's not that far off before all your phones and computers and TVs are going to be multiperspective too, at which point 2D images are going to look kind of uninteresting by comparison."~\url{https://youtu.be/BXdKVisWAco}. This would be like comparing today's newspapers with the fictional wizarding world's newspaper, The Daily Prophet.
 
@@ -8,28 +8,21 @@ The DeepView paper cover page video covering a broad range of topics from standa
 
 Actually, the DeepView paper has a beautiful software to customized, visualize, and render any type of MPI! It's kind of like the state of the art MPI manipulator.~\url{https://augmentedperception.github.io/deepview/}.
 
-The authors attempted to employ structure-from-motion techniques created in the field of computer vision, such as Colmap [Schönberger and Frahm 2016].
-These approaches are optimized for photo collections, and the authors discovered that when applied to video sequences, they are slow and prone to failure.
-Visual SLAM techniques take a sequence of frames as input and develop and maintain a sparse or semi-dense 3D reconstruction of the scene while estimating the viewpoint of the current frame in a manner consistent with the reconstruction.
-SLAM algorithms are not designed to process videos with multiple shots separated by cuts and dissolves, and they are typically only concerned with the accuracy of the current frame's pose—in particular, as the scene is refined over time, earlier frames may become out of sync with the current state of the world.
-To address these concerns, the following method is taken: 1. 3. When ORB-SLAM2 is unable to track K = 6 consecutive frames, or when the authors achieve a sequence length of L, the clip is considered to be complete.
-4. Reprocess all frames in the clip, maintaining the final scene model constant, in order to estimate a consistent pose for each camera.
-5. Re-initialize ORB-SLAM2 so that it is prepared to begin tracking a new clip in the following frames.
-Re-initialize ORB-SLAM2 to ensure that it is prepared to track a new clip in subsequent frames.
-In this method, the authors employ ORBSLAM2 not only to track frames, but also to partition a video into clips by detecting shot boundaries via tracking failure.
-Because SLAM approaches, including ORB-SLAM2, require knowledge of camera intrinsics such as field of view, the authors choose a 90-degree field of view.
-This assumption performed remarkably well for recognizing high-quality clips.
-The above processing results in a collection of clips or sequences for each video, as well as a preliminary set of camera parameters.
-4.3 Pose refinement through bundle adjustment The authors process each sequence at a higher resolution, extracting features from individual frames, matching them across frames, and performing a global bundle adjustment using the Ceres non-linear least squares optimizer [Agarwal et al 2016].
-Each sequence produces an adjusted set of camera postures, an estimated field of view, and a sparse point cloud describing the scene.
-One drawback with this method is that there is no way to identify the global size of the scene, which means that the reconstructed camera stances are scaled arbitrarily every clip.
-We "scale-normalize" each sequence using the predicted 3D point cloud, scaling it to a given distance from the cameras for the nearest scene geometry.
-The authors compute the 5th percentile depth for each frame from all point depths captured by the camera in that frame.
-Calculating this depth over all cameras in a series produces a collection of "near plane" depths for each camera.
+Finally understood what scale-invariant view synthesis is!!! Both stereo MPI and single-view MPI use view synthesis for supervision, perhaps not unlike how papers that predict depth and optical flow use view synthesis for supervision. Whereas stereo MPI can outright use a third view as ground-truth, single-view MPI can also use a second view as ground truth with the caveat that since the scale of the scene depicted by the monocular view can only be arbitrary, they'd have to somehow make the entire training scale invariant, because making just the ground truth scale invariant doesn't make sense.
 
+How does Tucker and Snavely map world points into source camera space?
+\url{https://learnopengl.com/Getting-started/Coordinate-Systems}
+\url{http://www.cse.psu.edu/~rtc12/CSE486/}
+\url{cse.psu.edu/~rtc12/CSE486/lecture12.pdf}
+\url{https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points}
 
-The authors' method predicts a scene-level MPI representation capable of real-time rendering of any fresh viewpoint with minimum processing. The authors use the data to train and test two variants of their method: 1) the original network architecture (4 convolution layers) with pixel reconstruction loss; and 2) the network architecture with perceptual loss. The authors discover that 1) the network architecture is significantly more effective than the simple four-layer network used in the original Kalantari paper; 2) the VGG perceptual loss contributes to the model's performance improvement over the pixel reconstruction loss; and 3) the model outperforms the better of the two Kalantari variants (VGG with the network architecture), indicating the high-quality of novel views rendered. The authors note that when rendering continuous view sequences of the same image, the results are more spatially coherent than those produced by Kalantari and exhibit less frame-to-frame aberrations. The authors argue that this is because, in contrast to the Kalantari model, they infer a single scene-level MPI representation that is shared for rendering all target views, thus imposing a smoothness prior on close views when rendering. The authors' model generalizes well on the HCI dataset and compares favorably to Zhang et al. along depth boundaries, where the method introduces fewer distortion artifacts. The authors trained appearance flow on the dataset [Zhou et al 2016], but discovered considerable aberrations in displayed views, such as straight lines getting warped. This method appears to be more suited to object-centric synthesis than to scene rendering, and it does not fully leverage correlations between views, as the trained network functions on each input image independently. The network makes no predictions about color images or blending weights. Each MPI plane's color image is derived from the reference source image.
-The network forecasts a single color image that will be shared across all MPI planes. The network generates a backdrop picture and weights for blending.
-In contrast to the previous form, the network predicts an additional foreground image for blending with the background. At each MPI plane, the network produces the color image directly. Because not all MPI planes must have the same color data, the "BG+blending weights" approach can better depict these areas.
-The “FG+BG+blending weights” form is slightly more powerful due to the unrestricted foreground image, while the “All images” variant, with a separate color image for each plane, is the only variant capable of properly representing a scene with depth complexity. The authors' model performance improves as the inferred MPI representation has more depth planes.
+Other papers find a scale factor that minimizes a scale-dependent loss, and rely on there being a closed-form solution for this scale factor.
+\url{https://cs.nyu.edu/~deigen/depth/}
+\url{https://arxiv.org/abs/1612.02401}
 
+Related work and presentations that can help with defense or write-up:
+\url{https://cs.brown.edu/courses/cs129/2012/}
+\url{https://www.youtube.com/watch?v=ZIHZ77y5pXY}
+\url{https://www.youtube.com/watch?v=zem03fZWLrQ}
+\url{https://www.youtube.com/watch?v=NqqbQJCqFvI}
+\url{https://www.youtube.com/watch?v=p2w1DNkITI8}
