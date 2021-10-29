@@ -1,99 +1,97 @@
 \section{Future Work}\label{sec:future-work}
 
-Maybe we could implement taking the average of the head poses of multipe people in the video frames of video conferences instead of just video chat and make their average head pospe change the scene rendering viepoint of teh secne to be rerenered.
-
-Through this thesis, I had the opportunity to form a 2-way pipeline that is able to render new views from the perspectives of both the participants in Video Chat conversation.
+Through this thesis, we had the opportunity to form a 2-way pipeline that is able to render new views from the perspectives of both the participants in Video Chat conversation.
 
 Increase the training speed of the MPI model by making it a multi-GPU model with the constantly-evolving, cutting-edge tf.distribute.Strategy API for distributed training with TensorFlow/Keras.
 This would allow for feeding a lot more images/video-frames to the model, which would further reduce the accuracy of the model.
 
 Using Grad-CAM to locate the bottlenecks in the recreated MPI neural net to optimize hyperparameter tuning for producing more accurate results, esp. predicted depths / disparity.
-https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/
+\url{https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/}
 
+Maybe we could implement taking the average of the head poses of multiple people in the video frames of video conferences instead of just video chat and make their average head pose change the scene rendering viewpoint of the scene to be rerendered.
 
 Render in both directions, making the pipeline two-way and then proceed to make it realtime by involving a game engine or any other framework capable of realtime rendering. 
 
-Try training on variable resolution video frames and not all just 1280x720 ones
+Try training on variable resolution video frames and not all just 1280x720 ones.
 
-Ideal for a headless server?
+% Ideal for a headless server?
 
-make use of docker multistage builds to have all components in a single dockerfile
-with multiple froms like tf/tf-gpu-2.2 as well as nvidia-cuda10.2-devel-ubuntu18.04
+Make use of docker multistage builds to have all components in a single dockerfile with multiple `from' statments like \texttt{tf/tf-gpu-2.2} as well as \texttt{nvidia-cuda10.2-devel-ubuntu18.04}
 
-possible hypothesis: did cuda support improve disparity map
+% possible hypothesis: did cuda support improve disparity map
 
-possible hypothesis: cuda gpu support is possibly not required for OpenFace inference
+% possible hypothesis: cuda gpu support is possibly not required for OpenFace inference
 
-features of OPenFace like head pose estimation may still work without CUDA recognition by the server either COlab or El Capitan 
+Features of OpenFace like head pose estimation may still work without CUDA recognition by the server either Colab or El Capitan. 
 
-need gpu support for maybe mpi training alone and not any other components of the pipeline as the rest of the pipeline is just inference
+Need GPU support for maybe MPI training alone and not any other components of the pipeline as the rest of the pipeline is just inference.
 
-COLMAP will be quicker with GPU
-https://colmap.github.io/faq.html#available-functionality-without-gpu-cuda
+COLMAP will be quicker with GPU as described in \url{https://colmap.github.io/faq.html#available-functionality-without-gpu-cuda}.
 
-major hypothesis: one major reason with disparity map to be less because the batch size was only 4 frames at once   
-if multi-gpu access were available then disparity map would have been better 
+Major hypothesis: one major reason with disparity map to be less because the batch size was only 4 frames at once if multi-gpu access were available then disparity map would have been better/ 
 
-Mainly mpi and maybe even colmap (for inference speed) seem to require GPU/CUDA support. I've been trying to get GPUs to be used by all my packages on Docker like MPI, COLMAP and their dependencies OpenCV, Dlib etc.
-I doesn't seem to work yet. So I'll resort to using these packages on Docker without GPU support for now. 
+% Mainly mpi and maybe even colmap (for inference speed) seem to require GPU/CUDA support. I've been trying to get GPUs to be used by all my packages on Docker like MPI, COLMAP and their dependencies OpenCV, Dlib etc.
+% I doesn't seem to work yet. So I'll resort to using these packages on Docker without GPU support for now. 
 
-in videos we have recording of my insights today - 8/15/21
-been falling behind and didn't report until resukts 
+% In videos we have recording of my insights today - 8/15/21
+% been falling behind and didn't report until resukts 
 
-and update to flagship versions
+% and update to flagship versions
 
-the main thing Dr ventura is that the CUDA install was broken and I needed it for multiple programs like dlib, openface, notwithstanding colmap 
+% the main thing Dr ventura is that the CUDA install was broken and I needed it for multiple programs like dlib, openface, notwithstanding colmap 
 
-ask prof ventura to update the nvidia drivers 
+% ask prof ventura to update the nvidia drivers 
 
-why did i go off on a tangent?
-https://stackoverflow.com/questions/43022843/nvidia-nvml-driver-library-version-mismatch
-Available functionality without GPU/CUDA
+% why did i go off on a tangent?
+% https://stackoverflow.com/questions/43022843/nvidia-nvml-driver-library-version-mismatch
+% Available functionality without GPU/CUDA
 
-https://colmap.github.io/faq.html#available-functionality-without-gpu-cuda
-If you do not have a CUDA-enabled GPU but some other GPU, you can use all COLMAP functionality except the dense reconstruction part. However, you can use external dense reconstruction software as an alternative, as described in the Tutorial. If you have a GPU with low compute power or you want to execute COLMAP on a machine without an attached display and without CUDA support, you can run all steps on the CPU by specifying the appropriate options (e.g., --SiftExtraction.use_gpu=false for the feature extraction step). But note that this might result in a significant slow-down of the reconstruction pipeline. Please, also note that feature extraction on the CPU can consume excessive RAM for large images in the default settings, which might require manually reducing the maximum image size using --SiftExtraction.max_image_size and/or setting --SiftExtraction.first_octave 0 or by manually limiting the number of threads using --SiftExtraction.num_threads.
+% https://colmap.github.io/faq.html#available-functionality-without-gpu-cuda
+% If you do not have a CUDA-enabled GPU but some other GPU, you can use all COLMAP functionality except the dense reconstruction part. However, you can use external dense reconstruction software as an alternative, as described in the Tutorial. If you have a GPU with low compute power or you want to execute COLMAP on a machine without an attached display and without CUDA support, you can run all steps on the CPU by specifying the appropriate options (e.g., --SiftExtraction.use_gpu=false for the feature extraction step). But note that this might result in a significant slow-down of the reconstruction pipeline. Please, also note that feature extraction on the CPU can consume excessive RAM for large images in the default settings, which might require manually reducing the maximum image size using --SiftExtraction.max_image_size and/or setting --SiftExtraction.first_octave 0 or by manually limiting the number of threads using --SiftExtraction.num_threads.
 
-nvidia-smi
-Failed to initialize NVML: Driver/library version mismatch
+% nvidia-smi
+% Failed to initialize NVML: Driver/library version mismatch
 
 
-what is cuda and nvcc all about?
-https://varhowto.com/check-cuda-version/
+% what is cuda and nvcc all about?
+% https://varhowto.com/check-cuda-version/
 
-dockerfile colmap run needs to be explained with video clip in MAnnequinChallenge
+% dockerfile colmap run needs to be explained with video clip in MAnnequinChallenge
 
-proof that gpu is being used by colmap in images in MannequinChallenge
+% proof that gpu is being used by colmap in images in MannequinChallenge
 
 
-https://linuxize.com/post/linux-time-command/
-time all functions
+% https://linuxize.com/post/linux-time-command/
+% time all functions
 
-make sure I'm able to restart the model at any poit and continue traning whre I left off and add datasets 
+% make sure I'm able to restart the model at any poit and continue traning whre I left off and add datasets 
 
-I need info on inference code 
+% I need info on inference code 
 
-Ask ventura why did yoyu say the disparity was bad
+% Ask ventura why did yoyu say the disparity was bad
 
-Hopefully successfully able to use the latest versions of all components of the mpi pipeline for both training and inference  
+Hopefully we are successfully able to use the latest versions of all components of the MPI pipeline for both training and inference sooner than later.  
 
-Another application would be if we have a VR headset with a camera on it we can track the rotation of the camera and by doing that you're tracking the rotation of the person's head so that you can render the VR content at the right angle
+% Another application would be if we have a VR headset with a camera on it we can track the rotation of the camera and by doing that you're tracking the rotation of the person's head so that you can render the VR content at the right angle
 
-Ask prof ventura is colmap autmatically redoes all error videos 
-Ask pro ventura about copyright for his own epipolar geometry lectures
+% Ask prof ventura is colmap autmatically redoes all error videos 
+% Ask pro ventura about copyright for his own epipolar geometry lectures
 
-stereo = 2 images pretty close to each other paired in a special way so that you can get really dense estimations of the depth so basically for every pixel you could get a depth estimate rather than some sparse sampling of keypoints
-canonical stereo case only have pure horizontal translation and no rotation and no other translations in Y or Z  
+% stereo = 2 images pretty close to each other paired in a special way so that you can get really dense estimations of the depth so basically for every pixel you could get a depth estimate rather than some sparse sampling of keypoints
+% canonical stereo case only have pure horizontal translation and no rotation and no other translations in Y or Z  
 
-blueer values are closer and redder values are farther away in disparity maps
+% blueer values are closer and redder values are farther away in disparity maps
 
-check 7000 train set and 1400 test set of 2018 paper
+% check 7000 train set and 1400 test set of 2018 paper
 
-why doesn't 2020 and 2018 papers employ SLAM algorithms directly from COLMAP and not indorectly by themsellves or are they refereing to the same slam algorithms
+% why doesn't 2020 and 2018 papers employ SLAM algorithms directly from COLMAP and not indorectly by themsellves or are they refereing to the same slam algorithms
 
-overfitting can be further reduced by using a cnn in the place of a gradient descent algorithm like flynn et all deep stereo 2019 i.e., essentially combining 2020 paper with this predecessor 
-chaekc the first chaPpter of interduction of 2019 deep stereo for more info abou this
-As a consequence, the network takes much larger strides along the direction of optimization and converges much sooner and with more accuracy than a network using standard gradient descent.
+Overfitting can be further reduced by using a CNN in the place of a gradient descent algorithm like Flynn et al.'s DeepView.
 
-Actually, the DeepView paper has a beautiful software to customized, visualize, and render any type of MPI! It's kind of like the state of the art MPI manipulator.~\url{https://augmentedperception.github.io/deepview/}. So maybe improve the 2020 MPI html visualizer upto the standarsd of the deep view one or atleast use it to tweak and experiment the various MPI paraeters lik number of layers etc before deploying and training and testing.
+% i.e., essentially combining 2020 paper with this predecessor 
+% chaekc the first chaPpter of interduction of 2019 deep stereo for more info abou this
+% As a consequence, the network takes much larger strides along the direction of optimization and converges much sooner and with more accuracy than a network using standard gradient descent.
 
-Adam is better than regular stochastic gradient descent but still not superior to Flynn et al.'s~\cite{flynn_deepview_2019} implementation of learned gradient descent.
+% Actually, the DeepView paper has a beautiful software to customized, visualize, and render any type of MPI! It's kind of like the state of the art MPI manipulator.~\url{https://augmentedperception.github.io/deepview/}. So maybe improve the 2020 MPI html visualizer upto the standarsd of the deep view one or atleast use it to tweak and experiment the various MPI paraeters lik number of layers etc before deploying and training and testing.
+
+% Adam is better than regular stochastic gradient descent but still not superior to Flynn et al.'s~\cite{flynn_deepview_2019} implementation of learned gradient descent.
