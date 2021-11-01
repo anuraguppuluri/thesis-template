@@ -1,34 +1,27 @@
 \section{Future Work}\label{sec:future-work}
 
-Through this thesis, we had the opportunity to form a 2-way pipeline that is able to render new views from the perspectives of both the participants in Video Chat conversation.
+We consider exciting future opportunities with this project in this section. We may increase the training speed of the MPI model by making it a multi-GPU model with the constantly-evolving, cutting-edge \texttt{tf.distribute.Strategy} API for distributed training with TensorFlow/Keras. This would allow for feeding a lot more images/video-frames to the model, which would further increase the accuracy of the model. Maybe we could implement taking the average of the head poses of multiple people in the video frames of video conferences instead of just video chat and make their average head pose change the scene rendering viewpoint of the scene to be rerendered. We may try to complete rendering in both directions, making the pipeline two-way, and then proceed to make it real time by involving a game engine or any other framework capable of real time rendering. We may try training on variable resolution video frames and not all just 1280x720 ones. We may make use of docker multistage builds to have all components in a single dockerfile with multiple `from' statments like \texttt{tf/tf-gpu-2.2} as well as \texttt{nvidia-cuda10.2-devel-ubuntu18.04}. Overfitting can be further reduced by using a CNN in the place of a gradient descent algorithm like Flynn et al.'s DeepView. We may use Grad-CAM to locate the bottlenecks in the recreated MPI neural net to optimize hyperparameter tuning for producing more accurate results, esp. predicted depths/disparity.
 
-Increase the training speed of the MPI model by making it a multi-GPU model with the constantly-evolving, cutting-edge tf.distribute.Strategy API for distributed training with TensorFlow/Keras.
-This would allow for feeding a lot more images/video-frames to the model, which would further reduce the accuracy of the model.
 
-Using Grad-CAM to locate the bottlenecks in the recreated MPI neural net to optimize hyperparameter tuning for producing more accurate results, esp. predicted depths / disparity.
-\url{https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/}
+% \url{https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/}
 
-Maybe we could implement taking the average of the head poses of multiple people in the video frames of video conferences instead of just video chat and make their average head pose change the scene rendering viewpoint of the scene to be rerendered.
 
-Render in both directions, making the pipeline two-way and then proceed to make it realtime by involving a game engine or any other framework capable of realtime rendering. 
-
-Try training on variable resolution video frames and not all just 1280x720 ones.
 
 % Ideal for a headless server?
 
-Make use of docker multistage builds to have all components in a single dockerfile with multiple `from' statments like \texttt{tf/tf-gpu-2.2} as well as \texttt{nvidia-cuda10.2-devel-ubuntu18.04}
+
 
 % possible hypothesis: did cuda support improve disparity map
 
 % possible hypothesis: cuda gpu support is possibly not required for OpenFace inference
 
-Features of OpenFace like head pose estimation may still work without CUDA recognition by the server either Colab or El Capitan. 
+% Features of OpenFace like head pose estimation may still work without CUDA recognition by the server either Colab or El Capitan. 
 
-Need GPU support for maybe MPI training alone and not any other components of the pipeline as the rest of the pipeline is just inference.
+% Need GPU support for maybe MPI training alone and not any other components of the pipeline as the rest of the pipeline is just inference.
 
-COLMAP will be quicker with GPU as described in \url{https://colmap.github.io/faq.html#available-functionality-without-gpu-cuda}.
+% COLMAP will be quicker with GPU as described in \url{https://colmap.github.io/faq.html#available-functionality-without-gpu-cuda}.
 
-Major hypothesis: one major reason with disparity map to be less because the batch size was only 4 frames at once if multi-gpu access were available then disparity map would have been better/ 
+% Major hypothesis: one major reason with disparity map to be less because the batch size was only 4 frames at once if multi-gpu access were available then disparity map would have been better/ 
 
 % Mainly mpi and maybe even colmap (for inference speed) seem to require GPU/CUDA support. I've been trying to get GPUs to be used by all my packages on Docker like MPI, COLMAP and their dependencies OpenCV, Dlib etc.
 % I doesn't seem to work yet. So I'll resort to using these packages on Docker without GPU support for now. 
@@ -70,7 +63,7 @@ Major hypothesis: one major reason with disparity map to be less because the bat
 
 % Ask ventura why did yoyu say the disparity was bad
 
-Hopefully we are successfully able to use the latest versions of all components of the MPI pipeline for both training and inference sooner than later.  
+% Hopefully we are successfully able to use the latest versions of all components of the MPI pipeline for both training and inference sooner than later.  
 
 % Another application would be if we have a VR headset with a camera on it we can track the rotation of the camera and by doing that you're tracking the rotation of the person's head so that you can render the VR content at the right angle
 
@@ -86,7 +79,6 @@ Hopefully we are successfully able to use the latest versions of all components 
 
 % why doesn't 2020 and 2018 papers employ SLAM algorithms directly from COLMAP and not indorectly by themsellves or are they refereing to the same slam algorithms
 
-Overfitting can be further reduced by using a CNN in the place of a gradient descent algorithm like Flynn et al.'s DeepView.
 
 % i.e., essentially combining 2020 paper with this predecessor 
 % chaekc the first chaPpter of interduction of 2019 deep stereo for more info abou this

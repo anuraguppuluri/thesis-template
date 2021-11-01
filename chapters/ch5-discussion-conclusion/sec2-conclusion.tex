@@ -1,8 +1,7 @@
 % \chapter{Conclusion}\label{ch:conclusion}
 \section{Conclusion}\label{sec:conclusion}
 
-
 In this thesis, we have not created novel models or datasets but have rather curated preexisting datasets and retrained a state-of-the-art CNN. Data curation has been an essential part of our work as the datasets' YouTube videos are subject to modifications over time. These modifications are in terms of the videos being taken down from YouTube or the required 1280$\times$720 pixel (720p) resolution versions of them becoming unavailable, etc. The curation process included action items like downloading and training only on 720p versions of the datasets' videos so as to minimize the chances of running into training errors, etc., as explained in section~\ref{sec:data}. As for simulating the 3D video chat experience itself, we linked-up the API of OpenFace 2.2~\cite{baltrusaitis_openface_2018} --- a preexisting head pose estimation model --- to the MPI inference procedure so the MPI inference may generate novel views rendered in the head pose evaluated by OpenFace 2.2, as explained in section~\ref{sec:implementation}.
 
-We used MPI to solve 3D video chat problem because of it real-time view and other view synthesis properties mentioned in the base paper section above. High quality, spatially-consistent, and high-resolution synthesis by rendering with MPIs which are essentially mini-local-light-field representations have been accomplished.
+We used MPI to solve 3D video chat problem because of its real-time view synthesis and other view synthesis properties mentioned in the base paper section above. High quality, spatially-consistent, and high-resolution synthesis by rendering with MPIs, which are essentially mini-local-light-field representations, have been accomplished.
 % in defence mention that MPI essentially constructs a mini light field.

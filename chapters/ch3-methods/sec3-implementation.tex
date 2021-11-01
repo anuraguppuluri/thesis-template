@@ -2,52 +2,26 @@
 
 % What you don't have is (a) the implementation of the losses, 
 
-And these are contributions of this thesis: -
-Supplementing the process of generating accurate MPI representations for close up targets like heads and bodies by 
+We supplemented the process of generating accurate MPI representations for close up targets like heads and bodies by improving their rerender accuracies. And these are contributions of this thesis: -
 \begin{itemize}
-    \item re-training the MPI network with datasets containing stereo images of close up objects  
-    \item recreating loss functions from the textual descriptions in the 2020 MPI paper
-    \item writing a data loader for MannequinChallenge dataset and RealEstate10k dataset
-    \item writing scripts to produce 3D point clouds with COLMAP
-    \item adapting the training and testing scripts from the 2020 MPI paper to the aforementioned datasets and loss functions
-    \item fixing Nan gradient errors produced by cumprod used in several places in MPI code by replacing it with safe\_cumprod as suggested by on of the authors of the 2020 paper
-    \item fixing ValueErrors from our Data Loader
+    \item Re-training the MPI network with datasets containing stereo images of close up objects.  
+    \item Recreating loss functions from the textual descriptions in the single-view MPI paper.
+    \item Writing a data loader for MannequinChallenge and RealEstate10k datasets.
+    \item Writing scripts to produce 3D point clouds with COLMAP.
+    \item Adapting the training and testing scripts from the single-view MPI paper to the aforementioned datasets and loss functions.
+    \item Fixing Nan gradient errors produced by \texttt{cumprod} used in several places in MPI code by replacing it with \texttt{safe\_cumprod} as suggested by on of the authors of the single-view paper.
+    \item Fixing \texttt{ValueErrors} from our Data Loader.
 \end{itemize}
 
-We reason that gaze estimation should not be added on top of head pose estimation because in the real world novel views are not based on change in gaze but only on change in head pose. This applies especially to  objects that are not hard to focus by the eyes like the screen that people look at when video chatting. It's like they are looking at a spherical or so called 360-degree panorama. Because when we keep our heads still and change just our gazes the the distances between all the objects in the world that can be focused by our eyes and are somewhat farther from the eyes scene do get rerender but only when we move our heads do those distance and distances relationships change. More precision can be added by using not just head pose estimation but also gaze estimation although we speculate that just as in the real world keeping the head still and changing the gaze does not let us observe novel views but the just different portions of the same 360-degree panorama.
+We reason that gaze estimation should not be added on top of head pose estimation because in the real world novel views are not based on change in gaze but only on change in head pose. This applies especially to objects that are not hard to focus by the eyes like the screen that people look at when video chatting. It's like they are looking at a spherical or so called 360-degree panorama. Because when we keep our heads still and change just our gazes, the distances between all the objects in the world that can be focused by our eyes and are somewhat farther from the eyes scene do get rerender but only when we move our heads do those distance and distances relationships change. More precision can be added by using not just head pose estimation but also gaze estimation although we speculate that just as in the real world keeping the head still and changing the gaze does not let us observe novel views but the just different portions of the same 360-degree panorama.
 
 % ------------------Richard's emails--------------
-% prof ventura:
-% I think that must be it – I am running it in eager mode.  We will work on switching over.  Thanks again, Richard.
 
+We are able to train the model finally and the loss did go down which was great. However, we found that the gradient calculation \texttt{grads = tape.gradient(loss, model.trainable\_weights)} would take about one minute! We asked the single-view authors if that's what they experienced as well. We were using a batch size of 8 at that time and this was on an Nvidia V100 GPU. The authors explained that their training setup was rather different: they had used the old TensorFlow Estimator system as they had a configuration to allow them to do distributed training on ten workers. But even on a single worker, their gradient calculation took less than a second. They wondered if maybe we were doing everything in eager mode so there would be a lot of overhead? Using Keras's \texttt{model.fit} or the old estimator system, or just wrapping things in \texttt{tf.function}, should allow the critical parts to run in graph mode and ought to be faster, they expressed. They presented another possibility that things were probably too big to fit on our GPU. The authors had used a batch size of 4, if they remembered correctly. We thanked the authors and expressed that at least we had the right intuition in thinking that might be an issue! We ultimately found that that was it --- we were running it in eager mode. And we worked on switching over and hence were able to complete our training and testing pipelines.
 
-% richard:
-
-% Our training setup was rather different: we used the old tf Estimator system as we had a configuration to allow us to do distributed training on ten workers.
-
- 
-
-% But even on a single worker, our gradient calculation took less than a second. I wonder if maybe you are doing everything in eager mode so there is a lot of overhead? Using keras's model.fit or the old estimator system, or just wrapping things in tf.function, should allow the critical parts to run in graph mode ought to be faster.
-
-% Another possibility is things are too big to fit on your GPU. We used a batch size of 4, if I remember correctly.
-
-
-% prof ventura:
-
-% Okay, thanks, Richard.  At least I had the right intuition in thinking that might be an issue!
-
- 
-
-% We are able to train the model now and the loss does go down which is great.  However, the gradient calculation
-
- 
-
-% grads = tape.gradient(loss, model.trainable_weights)
-
- 
-
-% takes about one minute!  Is that what you experienced as well?  I am using a batch size of 8 and this is on an Nvidia V100.
 % ------------richard'd emails--------------------
+
+
 
 % Training details. We implement our system in TensorFlow [Abadi
 % et al. 2016]. We train the network using the ADAM solver [Kingma

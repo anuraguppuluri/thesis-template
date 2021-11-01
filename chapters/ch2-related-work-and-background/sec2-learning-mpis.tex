@@ -85,7 +85,18 @@ Tucker and Snavely~\cite{single_view_mpi} was the first to implement learning-ba
     \item Pairs of source and target frames $(I_s,\ I_t)$ and respective camera parameters $(c_s,\ c_t)$ are randomly picked for training, along with the respective visible point sets of source frames. The sets of visible points are converted from world coordinates to camera coordinates to get a final point set $P_s = \{(x,\ y,\ d),\ \ldots\}$ for each source frame, where the $z$-coordinate of each world point becomes the depth $d$ of the world point from the source camera, and the mapped 2D points are denoted by the positions $(x,\ y)$ within the source image. 
     \item Similarly to Zhou et al., Tucker and Snavely's chosen reference camera for the MPI planes (Figure~\ref{fig:mpi-layered-representation}) is $c_s$, and their preferred MPI prediction format consists of a predicted background image $\hat{I_b}$, a set of layer-wise predicted alphas, and a set of layer-wise color blending weights that (unlike Zhou et al.) are calculated from the alphas and not predicted by the network. Tucker and Snavely derives color blending weights $w_i$ for each MPI layer $i$ as $w_i = \underbrace{\prod_{j>i} (1 - \alpha_j)}$, and final color values $C_i$ for each layer as $C_i = w_i I_s + (1 - w_i) \hat{I_b}$.
     \item Similarly to Zhou et al., when rendering an MPI, Tucker and Snavely's warping function $\mathcal{W}$ uses bilinear sampling and standard inverse homography (Figure~\ref{fig:standard-inverse-homography}) to warp each layer from source viewpoint $c_s$ to target viewpoint $c_t$: $C_i' = \mathcal{W}_{c_s, c_t}(\sigma d_i, C_i)$; $\alpha_i' = \mathcal{W}_{c_s, c_t}(\sigma d_i, \alpha_i)$. The only difference is that Tucker and Snavely's $\mathcal{W}$ scales the depths by a factor $\sigma$, which they compute separately for each training instance.
-    \item To get the final rerendered target $\hat{I_t}$, the warped layers $(C_i', \alpha_i')$ are alpha-composited as usual: $\hat{I_t} = \sum_{i=1}^D \left(C_i' \alpha_i'\ \underbrace{\prod_{j=i+1}^D (1 - \alpha_j')}\right)$. Besides, the disparity map $\hat{D_s}$ of the source image can also be similarly synthesized from the MPI using the inverse depths $d^{-1}$ of visible points $P_s$: $\hat{D_s} = \sum_{i=1}^D \left(d_i^{-1} \alpha_i\ \underbrace{\prod_{j=i+1}^D (1 - \alpha_j)}\right)$.
+    \item To get the final rerendered target $\hat{I_t}$, the warped layers $(C_i', \alpha_i')$ are alpha-composited as usual:
+    
+    \begin{equation}\label{eq:rerendered-target}
+    \hat{I_t} = \sum_{i=1}^D \left(C_i' \alpha_i'\ \underbrace{\prod_{j=i+1}^D (1 - \alpha_j')}\right)
+    \end{equation}
+    
+    Furthermore, the disparity map $\hat{D_s}$ of the source image can also be similarly synthesized from the MPI using the inverse depths $d^{-1}$ of visible points $P_s$:
+    
+    \begin{equation}\label{eq:disparity-map}
+    \hat{D_s} = \sum_{i=1}^D \left(d_i^{-1} \alpha_i\ \underbrace{\prod_{j=i+1}^D (1 - \alpha_j)}\right)
+    \end{equation}
+    
     \item DeepView~\cite{flynn_deepview_2019} describes the under-braced terms in all previously mentioned formulae to be the \textit{net transmittance} at respective depth planes $i$. They reason that the terms represent the fraction of the color/disparity that persists in layer $i$ after getting attenuated through all prior layers.
     \item Learning the 3D scene structure from a single view is trickier than from multiple views, for only the relative pose between multiple views can implicitly resolve global scale ambiguity. But Tucker and Snavely's method is able to accept source and target inputs of unknown scale and still make rerendered images match ground-truth because they solve for the unknown scale factor as part of their MPI generation. They observe that RealEstate10K-dataset-derived inputs $c_s$, $c_t$, and $P_s$ are consistent in scale for each training instance. They, therefore, compute $\sigma$ to be the scale factor that minimizes the log-squared error between the predicted disparity map $\hat{D_s}$, bilinearly sampled at each position $(x,y)$, and the point set $P_s$:
     
@@ -94,7 +105,9 @@ Tucker and Snavely~\cite{single_view_mpi} was the first to implement learning-ba
     After $\sigma$ is applied in warping with $\mathcal{W}$ as shown before, the rendered image no longer varies with the scale of the input viewpoints and point set, and can be used in the various loss functions. 
     \item Their weighted aggregate loss function is given by
     
-    \[\mathcal{L} = \lambda_p \mathcal{L}^{pixel} + \lambda_s \mathcal{L}^{smooth} + \lambda_d \mathcal{L}^{depth}\]
+    \begin{equation}\label{eq:aggregate-loss}
+    \mathcal{L} = \lambda_p \mathcal{L}^{pixel} + \lambda_s \mathcal{L}^{smooth} + \lambda_d \mathcal{L}^{depth}
+    \end{equation}
     
     Here, $\mathcal{L}^{pixel}$ is just the regular $L_1$ photometric distance between synthesize and ground-truth target views:
     
