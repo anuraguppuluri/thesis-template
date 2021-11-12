@@ -6,6 +6,8 @@ manneq test-no 0000728 frames from 00024 videos
 man test-maybe 0012831 frames from 00300 videos
 mannequin vali 0005928 frames from 00088 videos
 
+must mention how we dealt with the imbalance in our datasets for the extended dataset re10k+mc
+
 we did try to upscale videos first but it took like 76 minutes for 8 videos with the default scaling algorithms (maybe lanczos or bicubic not sure) 
 so we though it would be faster to get the 720p version in another format other than mp4 they say mov is closest to mp4 and then used ffmpeg swiftness to covert from one format to another
 and finally we adopted this method for downscaling as well
