@@ -1,1 +1,74 @@
+final count 
+re10k training 9095528 frames from 66861 videos 
+manne training 0117811 frames from 02364 videos
+manne test-yes 0012595 frames from 00333 videos
+manneq test-no 0000728 frames from 00024 videos
+man test-maybe 0012831 frames from 00300 videos
+mannequin vali 0005928 frames from 00088 videos
+
+we did try to upscale videos first but it took like 76 minutes for 8 videos with the default scaling algorithms (maybe lanczos or bicubic not sure) 
+so we though it would be faster to get the 720p version in another format other than mp4 they say mov is closest to mp4 and then used ffmpeg swiftness to covert from one format to another
+and finally we adopted this method for downscaling as well
+just to maintain consistency 
+so there are no longer non720p videos but some other format videos with the same 720p resolution
+
+i now remember why we explicitly did all the best video and best audio extensions it was it avoid 
+WARNING: Requested formats are incompatible for merge and will be merged into mkv.
+
+sometimes we got back 720p versions miraculously after a few months like shown in the Manne challenge dir on el capitan lofg files named
+
+
+we also just found that we do have video only versions of 720p available; a list of all versions can be seen with the youtube-dl -F link\_name command
+
+figured it's best to only download video only for these videos instead of video + non-m4a audio
+
+finally understood the lesson that only the video verions available in youtube-dl -F may be downloaded even by 4k video downloader
+
 We fixed the programming errors encountered during training. Perhaps mention these errors in appendix?
+
+Data section major error sometimes sift GPU would become full like so:
+==============================================================================
+Sequential feature matching
+==============================================================================
+
+ERROR: Not enough GPU memory to match 2563 features. Reduce the maximum number of matches.
+ERROR: SiftGPU not fully supported
+
+and this would warrant a COLMAP reprocessing
+
+hence it maybe concluded that presence of sift GPU errors surely warrants reprocessing with COLMAP
+
+there are two possibilities 
+either I may check if colmap will reduce the number of zero and one point files by rerunning it on the zero and one point folder and leave it at that 
+or i may rerun colmap on both the zero and no point folder as well as the uncolmappable folder to see if uncolmappable also improves on consecutive runs 
+
+if this theory is proved then it goes to show that even the successfully processed colmaps may have additional points to show upon reprocessing and that it's entirely empirical
+
+I think there is logic in doing just the zero one points again and not the uncolmappable points because uncolmappable points are the only ones that have percolated until the very end
+
+not what might very interesting to note is whether core dumps and such potentially uncolmappable errors occur when I reprocess these zero one ones as well
+
+test-yes and train uncolmappable in MannequinChallenge at least need to be colmapped
+
+actually, it has only been one attempt for all these MannequinChallenge ones so maybe recolmap all them from MannequinChallenge
+
+going like this it maybe that we'll just recolmap process every single thing in the world you know, except maybe not the 70000 training ones from RealEstate10K maybe
+
+just got the proof that train-uncolmappable for MannequinChallenge gave me back 4 processsed frame points because I found sift GPU issues in train3
+
+obviously it is mainly the uncolmappable videos that do not produce point clouds
+
+it looks like the core dumps are being produced by uncolmappable videos with very few frames being processed
+like 0 or 1 or two frames and for some other reasons as well
+
+if you wanna find the reasons for all the errors then look at the log files of all these reprocessings of uncolmappables and zero-one-pts dirs 
+
+apparently I seem to have gotten it reversed: zero-one-pts per frame seem to stay the same and uncolmappables seem to have been salvageable --- prove twice now with test-yes uncolmappable and train-uncolmappable for mannequin challenge --- now thrice by the final RealEstate10K train-uncolmappable set
+
+zero-one-pt are not salvageable upon even the second COLMAP processing, let alone multiple processings
+
+finally we double checked all uncolmappable and zero-one-pt ones
+check the log files of all these to find the very best reasons why they were not done
+ask dr ventura questions about why they were not done by colmap with all the various reasons it shows us
+
+we only subjected upscaled videos to reprocessing and not downscaled videos because we needed no extrapolation to predicted pixels but just interpolation with already available pixels  
