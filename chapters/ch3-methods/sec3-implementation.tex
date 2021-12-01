@@ -2,6 +2,21 @@
 
 % What you don't have is (a) the implementation of the losses, 
 
+% Wandb.ai was a big help during this process \cite{wandb}
+
+wandb.ai - also helped me to restart the training from where it left off instead of restarting from the beginning
+dockerized implementation — robustness
+data curation
+RealEstate10K		—	9 mil frames
+MannequinChallenge	—	100k frames
+addressing data imbalance 
+addressing artifacts
+reimplemented data loader, loss functions  
+Real-time high quality view synthesis w/o game engines
+scale-invariant view synthesis
+scope for improving single-view view synthesis with discriminator 
+stereo or multi-view view synthesis
+
 We supplemented the process of generating accurate MPI representations for close up targets like heads and bodies by improving their rerender accuracies. And these are contributions of this thesis: -
 \begin{itemize}
     \item Re-training the MPI network with datasets containing stereo images of close up objects.  
@@ -18,6 +33,13 @@ We reason that gaze estimation should not be added on top of head pose estimatio
 % ------------------Richard's emails--------------
 
 We are able to train the model finally and the loss did go down which was great. However, we found that the gradient calculation \texttt{grads = tape.gradient(loss, model.trainable\_weights)} would take about one minute! We asked the single-view authors if that's what they experienced as well. We were using a batch size of 8 at that time and this was on an Nvidia V100 GPU. The authors explained that their training setup was rather different: they had used the old TensorFlow Estimator system as they had a configuration to allow them to do distributed training on ten workers. But even on a single worker, their gradient calculation took less than a second. They wondered if maybe we were doing everything in eager mode so there would be a lot of overhead? Using Keras's \texttt{model.fit} or the old estimator system, or just wrapping things in \texttt{tf.function}, should allow the critical parts to run in graph mode and ought to be faster, they expressed. They presented another possibility that things were probably too big to fit on our GPU. The authors had used a batch size of 4, if they remembered correctly. We thanked the authors and expressed that at least we had the right intuition in thinking that might be an issue! We ultimately found that that was it --- we were running it in eager mode. And we worked on switching over and hence were able to complete our training and testing pipelines.
+
+fixing the nan issues has great value according to ryan nett
+before fixing the nan issue, the disparity maps would become smudgier and smudgier and then at round trainig step 27613 the last few dregs of disparity wulkdf start to vanish ansd at step 28115 it would disappear completetely as shown in the figfure
+
+need to mention learning rate as well
+
+
 
 % ------------richard'd emails--------------------
 
@@ -376,8 +398,6 @@ We are able to train the model finally and the loss did go down which was great.
 % This probably caused by insufficient GPU
 % memory. Consider reducing the maximum number of features.
 % https://colmap.github.io/faq.html#feature-matching-fails-due-to-illegal-memory-access
-% COLMAP error 1 solution: ask prof Ventura which GPU to use
-% Now trying to use both El Capitan and Colab
 % nvidia-smi --query-gpu=gpu_name,gpu_bus_id,vbios_version --format=csv
 % https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries 
 % El Capitan 
