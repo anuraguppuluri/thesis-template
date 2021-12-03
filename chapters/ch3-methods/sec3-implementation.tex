@@ -1,48 +1,10 @@
 \section{Implementation}\label{sec:implementation} 
 
-% What you don't have is (a) the implementation of the losses, 
+We attempted to generate accurate MPI representations for close-up targets such as heads and upper bodies and improve their rerender accuracies. After putting together the data loader to feed the datasets and point clouds into the network, we recreated loss functions from the textual descriptions in the single-view MPI paper. As mentioned in subsection~\ref{subsec:base-papers}, we likened our training process to Tucker and Snavely~\cite{single_view_mpi} in several aspects such as by using TensorFlow, the ADAM solver, a pixel loss weight of 1, a smoothness loss weight of 0.5, etc. We experimented with choices of learning rate and depth loss weight but generally picked 0.00001 and 1, respectively. We used wandb.ai~\cite{wandb} for experiment tracking and it was a big help in our entire process. It helped us spin different variants of the model other than the chief variants characterized by their being trained on either MannequinChallenge alone or a combination of both datasets. As with some notable attempts at model training in the community, we encountered NaN gradient errors that took a good chuck of our resolution efforts in this work but ultimately could not be resolved. NaN gradients could only be reduced in their frequency with our various attempts at improving the variants and wandb.ai helped immensely in recovering from them. Replacing \texttt{cumprod} used in several places in the single-view MPI code with \texttt{safe\_cumprod}, as suggested by on of the authors of the single-view paper, also helped reduce NaN-encountering frequency. What we able to fix the \texttt{ValueErrors} occasionally thrown by our data loader. We considered a more sophisticated approach to fixing the dataset imbalance problem given the enormity of RealEstate10K compared to MannequinChallenge. But we settled for letting the variant trained on both datasets to pick batches alternatingly from either. We also attempted to address the rendered artifacts mentioned in section~\ref{sec:approach} and determine if real-time high quality view synthesis was indeed possible without game engines.
 
-% Wandb.ai was a big help during this process \cite{wandb}
+We used customized training loops with TensorFlow's \texttt{tf.GradientTape} context~\cite{noauthor_custom_nodate}. However, we found that the gradient calculation (Section~\ref{sec:code-snippets}) would take about one minute! We were using a batch size of 8 at that time on an NVIDIA V100 GPU. But the authors of the single-view MPI paper informed us that their gradient calculation would take less than a second even on a single worker. They then correctly diagnosed our issue to be that we were doing everything in eager mode which would lead to the accumulation of a lot of overhead. They suggested that using Keras's \texttt{model.fit} or the old estimator system of TensorFlow, or just wrapping things in \texttt{tf.function} should allow the critical parts to run in graph mode and be faster. They also suggested that things were probably too big to fit on our GPU. The authors had used a batch size of 4. We ultimately adopted the use of \texttt{tf.function} wrapper and a batch size of 4 as well and were able to complete implementing our training and testing pipelines.
 
-wandb.ai - also helped me to restart the training from where it left off instead of restarting from the beginning
-dockerized implementation — robustness
-data curation
-RealEstate10K		—	9 mil frames
-MannequinChallenge	—	100k frames
-addressing data imbalance 
-addressing artifacts
-reimplemented data loader, loss functions  
-Real-time high quality view synthesis w/o game engines
-scale-invariant view synthesis
-scope for improving single-view view synthesis with discriminator 
-stereo or multi-view view synthesis
-
-We supplemented the process of generating accurate MPI representations for close up targets like heads and bodies by improving their rerender accuracies. And these are contributions of this thesis: -
-\begin{itemize}
-    \item Re-training the MPI network with datasets containing stereo images of close up objects.  
-    \item Recreating loss functions from the textual descriptions in the single-view MPI paper.
-    \item Writing a data loader for MannequinChallenge and RealEstate10k datasets.
-    \item Writing scripts to produce 3D point clouds with COLMAP.
-    \item Adapting the training and testing scripts from the single-view MPI paper to the aforementioned datasets and loss functions.
-    \item Fixing Nan gradient errors produced by \texttt{cumprod} used in several places in MPI code by replacing it with \texttt{safe\_cumprod} as suggested by on of the authors of the single-view paper.
-    \item Fixing \texttt{ValueErrors} from our Data Loader.
-\end{itemize}
-
-We reason that gaze estimation should not be added on top of head pose estimation because in the real world novel views are not based on change in gaze but only on change in head pose. This applies especially to objects that are not hard to focus by the eyes like the screen that people look at when video chatting. It's like they are looking at a spherical or so called 360-degree panorama. Because when we keep our heads still and change just our gazes, the distances between all the objects in the world that can be focused by our eyes and are somewhat farther from the eyes scene do get rerender but only when we move our heads do those distance and distances relationships change. More precision can be added by using not just head pose estimation but also gaze estimation although we speculate that just as in the real world keeping the head still and changing the gaze does not let us observe novel views but the just different portions of the same 360-degree panorama.
-
-% ------------------Richard's emails--------------
-
-We are able to train the model finally and the loss did go down which was great. However, we found that the gradient calculation \texttt{grads = tape.gradient(loss, model.trainable\_weights)} would take about one minute! We asked the single-view authors if that's what they experienced as well. We were using a batch size of 8 at that time and this was on an Nvidia V100 GPU. The authors explained that their training setup was rather different: they had used the old TensorFlow Estimator system as they had a configuration to allow them to do distributed training on ten workers. But even on a single worker, their gradient calculation took less than a second. They wondered if maybe we were doing everything in eager mode so there would be a lot of overhead? Using Keras's \texttt{model.fit} or the old estimator system, or just wrapping things in \texttt{tf.function}, should allow the critical parts to run in graph mode and ought to be faster, they expressed. They presented another possibility that things were probably too big to fit on our GPU. The authors had used a batch size of 4, if they remembered correctly. We thanked the authors and expressed that at least we had the right intuition in thinking that might be an issue! We ultimately found that that was it --- we were running it in eager mode. And we worked on switching over and hence were able to complete our training and testing pipelines.
-
-fixing the nan issues has great value according to ryan nett
-before fixing the nan issue, the disparity maps would become smudgier and smudgier and then at round trainig step 27613 the last few dregs of disparity wulkdf start to vanish ansd at step 28115 it would disappear completetely as shown in the figfure
-
-need to mention learning rate as well
-
-
-
-% ------------richard'd emails--------------------
-
+We then inserted OpenFace 2.2~\cite{baltrusaitis_openface_2018} into the inference pipeline of one of our better performing model variants and attempted to emulate one half of a video chat system. We subjected a ''viewer" video sequence to head pose extraction from all frames by OpenFace 2.2, as show in figure~\ref{fig:3d-video-chat-rendering-pipeline}. We used one of the utility functions in the single-view MPI modules to extract the yaw, pitch, and roll angles of the ``viewer" frames in a manned conducive to being accepted by MPI inference. We then rendered a ``viewee" video sequence at the head pose of the ``viewer" frames with matching timestamps. Perhaps more precision could have been added by using not just head pose estimation but also gaze estimation with OpenFace 2.2.
 
 
 % Training details. We implement our system in TensorFlow [Abadi

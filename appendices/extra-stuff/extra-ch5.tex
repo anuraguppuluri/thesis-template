@@ -2,3 +2,9 @@ Maybe if the software ffmpeg or otherwise takes faster and gets better at upsamp
 
 how exactly do these things change with the scale of an image 
 do they correspond exactly or what? like do the videos correspond exactly to the points produced or what?
+
+This would allow for feeding a lot more images/video-frames to the model, which would further increase the accuracy of the model.
+
+We may make use of Docker multistage builds to have all components in a single Dockerfile with multiple `from' statments like \texttt{tf/tf-gpu-2.2} as well as \texttt{nvidia-cuda10.2-devel-ubuntu18.04}.
+
+ We may use Grad-CAM to locate the bottlenecks in the recreated MPI neural net to optimize hyperparameter tuning for producing more accurate results, esp. predicted depths/disparity.
