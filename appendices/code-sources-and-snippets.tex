@@ -7,15 +7,15 @@
     \1 Tucker and Snavely's~\cite{single_view_mpi} network definition: \href{https://github.com/google-research/google-research/blob/ea313c6e96acce6c863de41615c6cf4079b8ca94/single_view_mpi/libs/nets.py#L146}{\texttt{nets.mpi\_from\_image}}
     \1 Tucker and Snavely's rendering code: \href{https://github.com/google-research/google-research/blob/ea313c6e96acce6c863de41615c6cf4079b8ca94/single_view_mpi/libs/mpi.py#L232}{\texttt{mpi.render}}
     \1 Zhou et al.'s~\cite{zhou2018stereo} data loader: \href{https://github.com/google/stereo-magnification/blob/f2041f80ed8c340173a6048375ba900201c1f1e7/stereomag/loader.py}{\texttt{loader.py}}; \href{https://github.com/google/stereo-magnification/blob/f2041f80ed8c340173a6048375ba900201c1f1e7/stereomag/datasets.py}{\texttt{datasets.py}}
-    \1 The GitHub repository for this thesis: \url{https://github.com/anuraguppuluri/view-synthesis.git}
+    \1 Tucker and Snavely's comprehensive inference Google Colaboratory notebook: \href{https://colab.research.google.com/github/google-research/google-research/blob/master/single_view_mpi/example.ipynb}{\texttt{single-view-mpi.ipynb}}
+    \1 The GitHub repository for this thesis including sample renderings and demos: \url{https://github.com/anuraguppuluri/view-synthesis.git}
 \end{outline}
 
 \section{Code Snippets}\label{sec:code-snippets}
 
 \begin{outline}
-    \1 Gradient calculation:
-        \2 \texttt{grads = tf.GradientTape().gradient(loss,}
-        \2 \texttt{model.trainable\_weights)}
+    \1 Gradient calculation:\begin{verbatim}grads = tf.GradientTape().gradient(loss,\end{verbatim}\begin{verbatim}    model.trainable_weights)\end{verbatim}
+    \1 Linux command to locate point cloud \texttt{.txt} files with less than 2 3D points:\begin{verbatim}find -type f -exec bash -c `[ $(grep -cm 2 ^ "${1}") != "2" ]\end{verbatim}\begin{verbatim}    && echo "${1}"' -- {} \;\end{verbatim}
 \end{outline}
 
 \end{appendices}
