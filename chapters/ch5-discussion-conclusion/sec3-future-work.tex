@@ -1,10 +1,11 @@
 \section{Future Work}\label{sec:future-work}
 
-We consider exciting future opportunities with this project in this section. We may increase the training speed of the MPI model by making it a multi-GPU model with the constantly-evolving, cutting-edge \texttt{tf.distribute.Strategy} API for distributed training with TensorFlow/Keras. We could perhaps implement taking the average of the head poses of multiple people in the video frames of video conferences rather then just one-on-one video chats and make their average head pose change the rendering viewpoint of the scene to be rerendered. We could try to complete rendering in both directions, making the pipeline two-way, and then proceed to make it real time by involving a game engine or any other framework capable of further improving real time rendering. We may try training on variable resolution video frames and not all just 720p ones. Overfitting can be further reduced by using a CNN in the place of a gradient descent algorithm similar to Flynn et al.'s DeepView~\cite{flynn_deepview_2019}.
+We consider exciting future opportunities with this project in this section. We may increase the training speed of the MPI model by making it a multi-GPU model with the constantly-evolving, cutting-edge \texttt{tf.distribute.Strategy} API for distributed training with TensorFlow/Keras. We could perhaps implement taking the average of the head poses of multiple people in the video frames of multiple-participant video conferences rather then just one-on-one video chats and make their average head pose change the rendering viewpoint of the scene to be rerendered. We could proceed to make the pipeline real time by involving a game engine or any other framework capable of further improving real time rendering. We may try training on variable resolution video frames and not all just 720p ones. Overfitting can be further reduced by using a CNN in place of the gradient descent algorithm, similar to Flynn et al.'s DeepView~\cite{flynn_deepview_2019}.
 
 % \url{https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/}
 
-
+%  We could perhaps implement taking the average of the head poses of multiple people in the video frames of multiple-participant video conferences rather then just one-on-one video chats and make their average head pose change the rendering viewpoint of the scene to be rerendered. 
+% as a toy project but in reality we could do domehting like apple auto focus by clicking on the heads of the multiple participants and let control flow seamlessly.
 
 % Ideal for a headless server?
 
