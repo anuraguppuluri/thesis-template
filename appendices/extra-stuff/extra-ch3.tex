@@ -8,4 +8,4 @@ We next process each sequence at higher resolution, using a standard structure-f
 Stereo Magnification paper training:
 Training details. We implement our system in TensorFlow [Abadi et al. 2016]. We train the network using the ADAM solver [Kingma and Ba 2014] for 600K iterations with learning rate 0.0002, β1 = 0.9, β2 = 0.999, and batch size 1. During training, the images and MPI have a spatial resolution of 1024 × 576, but the model can be applied to arbitrary resolution at test time in a fully-convolutional manner. Training takes about one week on a Tesla P100 GPU.
 
-They didn't even use multiGPU — stereo magnification folks
+They didn't even use multiGPU — stereo magnification authors.

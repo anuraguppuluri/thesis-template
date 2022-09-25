@@ -1,15 +1,7 @@
-final count 
-re10k training 9095528 frames from 66861 videos 
-manne training 0117811 frames from 02364 videos
-manne test-yes 0012595 frames from 00333 videos
-manneq test-no 0000728 frames from 00024 videos
-man test-maybe 0012831 frames from 00300 videos
-mannequin vali 0005928 frames from 00088 videos
+At test time, 2020 MPI uses the point set to compute the scale factor sigma in the same way as they do during training.
 
 Results section:
 Here are some evaluations that have been brought up with comparisons with baseline people depth estimation algorithms like MiDAS:
-
-At test time, 2020 MPI uses the point set to compute the scale factor sigma in the same way as they do during training.
 
 % \newcolumntype{L}{>{\raggedleft\arraybackslash}m{3.5cm}}
 % \newcolumntype{M}{>{\raggedright\arraybackslash}m{2cm}}
@@ -53,5 +45,3 @@ At test time, 2020 MPI uses the point set to compute the scale factor sigma in t
 %     {\small n refers to the distance between the reference and target frames picked by the generator. Retraining promises marked improvement over original pretrained model.}
 % % \end{table*}
 % \end{sidewaystable*}
-
-A further testimony to this improvement can be obtained by inspecting the performance of even the prematurely halted multi-GPU variant. It performs at par with the original pretrained model which indicates that the pretrained model has begun to continue where it left off and specialize in processing video-chat-like frames. It would have run properly if not for the resource errors mentioned in the earlier that could point to underlying issues like possible unchecked growth of TensorFlow graphs per pipeline replica or such. This seems to be the case even though the replicas seem to be getting properly allocated inputs and their respective outputs also seem to be getting well gelled together in the end.
