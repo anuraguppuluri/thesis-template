@@ -5,12 +5,28 @@ We consider exciting future opportunities with this project in this section. We 
 future work maybe to freeze soom layers that already learned on the 
 9 milion frames of real estate and as Mannequin is much much smalled 
 
+Maybe if the software ffmpeg or otherwise takes faster and gets better at upsampling maybe that's when I can think of upsampling less-than-720p videos.
+
+How exactly do these things change with the scale of an image? 
+Do they correspond exactly or what? Like do the videos correspond exactly to the points produced or what?
+
+This would allow for feeding a lot more images/video-frames to the model, which would further increase the accuracy of the model.
+
+We may make use of Docker multistage builds to have all components in a single Dockerfile with multiple `from' statments like \texttt{tf/tf-gpu-2.2} as well as \texttt{nvidia-cuda10.2-devel-ubuntu18.04}.
+
+We may use high-intuition-endowing projects like Grad-CAM to locate the bottlenecks in the recreated MPI neural net to optimize hyperparameter tuning for producing more accurate results, esp. predicted depths/disparity.
+% \url{https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/}
+
+maybe incorporate mine and nex mpis into solving the depth issues next time
+maybe add mine mpi too or not	and nex mpi too maybe
+https://arxiv.org/pdf/2103.14910.pdf	https://nex-mpi.github.io/
+
 %  We could perhaps implement taking the average of the head poses of multiple people in the video frames of multiple-participant video conferences rather then just one-on-one video chats and make their average head pose change the rendering viewpoint of the scene to be rerendered. 
 % as a toy project but in reality we could do domehting like apple auto focus by clicking on the heads of the multiple participants and let control flow seamlessly.
 
 % Ideal for a headless server?
 
-
+As emphasized by Andrew Ng of DeepLearning.AI, Coursera, and Stanford University fame~\cite{bescond_deep-dive_2021}, using advancements in Deep Learning to optimize Data Curation~\cite{thirumuruganathan_data_2019} is sure to improve any ML model such as ours.
 
 % possible hypothesis: did cuda support improve disparity map
 
